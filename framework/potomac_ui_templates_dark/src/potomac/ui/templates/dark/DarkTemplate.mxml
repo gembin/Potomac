@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:test="potomac.ui.restricted.*" xmlns="potomac.ui.templates.dark.*" xmlns:mx="http://www.adobe.com/2006/mxml" 
+	width="100%" height="100%" resize="onResize(event)" backgroundColor="0x000000">
+	
+	<mx:Metadata>
+		[Template(id="potomac_dark",properties="logo:image")]
+	</mx:Metadata>
+	
+	<mx:Style source="tabs.css"/>
+	
+	<mx:Script>
+		<![CDATA[
+			import potomac.ui.TemplateEvent;
+			import mx.managers.CursorManager;
+			import potomac.inject.InjectionEvent;
+			import potomac.inject.Injector;
+			import potomac.bundle.Extension;
+			import potomac.bundle.IBundleService;
+			import mx.events.ResizeEvent;
+			import mx.events.IndexChangedEvent;
+			import mx.core.Container;
+			import potomac.ui.Page;
+			import potomac.ui.PotomacUI;
+			import mx.events.ItemClickEvent;
+			import mx.events.FlexEvent;
+		
+
+			[Inject]
+			public var _potomacUI:PotomacUI;
+			[Inject]
+			public var _bundleService:IBundleService;
+			[Inject]
+			public var _injector:Injector;
+			
+			private var _busyCursors:int = 0;
+			
+			
+			[Handles(event="templateInitialize")]
+			public function onTemplateInitialize(e:TemplateEvent):void
+			{				
+				logo.source = e.parameters.logo;
+				
+				//load actions
+				var exts:Array = _bundleService.getExtensions("Action");
+				linkBar.dataProvider = exts;
+				linkBar.labelField = "label";
+				linkBar.iconField = "icon";
+									
+				tabNav.validateNow();
+			}
+				
+			[Handles(event="templateOpenPage")]
+			public function openPage(e:TemplateEvent):void
+			{
+				var kid:DynCanvas = new DynCanvas();
+				kid.label = e.descriptor.title;
+				kid.icon = e.descriptor.icon;
+				if (e.input != null)
+				{
+					if (e.input.title != null)
+						kid.label = e.input.title;
+					if (e.input.icon != null)
+						kid.icon = e.input.icon;
+				}
+				kid.pageDesc = e.descriptor;
+				kid.page = e.page;
+				kid.populated = false;
+				kid.input = e.input;
+				kid.options = e.options;
+				kid.dirty = false;
+				tabNav.addChild(kid);
+				
+				if (e.setFocus)
+					tabNav.selectedChild = kid;
+				
+				if (tabNav.selectedChild == kid)
+					loadPage(kid);
+			}
+		
+				
+			private function onTabChange(e:IndexChangedEvent):void
+			{
+				loadPage(e.relatedObject as DynCanvas);
+			}
+			
+			private function loadPage(parent:DynCanvas):void
+			{
+				if (parent.populated == true)
+					return;
+
+				var pageUI:Container = parent.page.getContainer();
+				pageUI.percentHeight = 100;
+				pageUI.percentWidth = 100;
+				parent.addChild(pageUI);
+				
+				tabNav.validateNow();
+				parent.page.create(parent.options);
+				
+				parent.populated = true;
+			}
+			
+			[Handles(event="templateShowPage")]
+			public function onShowPage(e:TemplateEvent):void
+			{
+				var tab:DynCanvas = getPageTab(e.page);
+				tabNav.selectedChild = tab;
+			}
+			
+			[Handles(event="templateClosePage")]
+			public function onClosePage(e:TemplateEvent):void
+			{
+				var tab:DynCanvas = getPageTab(e.page);
+				tabNav.removeChild(tab);
+				if (tabNav.selectedChild != null)
+				{
+					loadPage(tabNav.selectedChild as DynCanvas);
+				}
+
+			}
+			
+			[Handles(event="templatePageDirtyChange")]
+			public function onPageDirtyChange(e:TemplateEvent):void
+			{
+				var tab:DynCanvas = getPageTab(e.page);
+				if (tab == null)
+					return;
+				var dirty:Boolean = e.page.containsDirty();
+				if (dirty != tab.dirty)
+				{
+					if (dirty)
+					{
+						tab.label = "*" + tab.label;
+					}
+					else
+					{
+						tab.label = tab.label.substr(1);
+					}
+				}
+				tab.dirty = dirty;
+			}
+			
+			private function getPageTab(page:Page):DynCanvas
+			{
+				var kids:Array = tabNav.getChildren();
+				for (var i:int = 0; i < kids.length; i++)
+				{
+					if (kids[i].page == page)
+					{
+						return kids[i] as DynCanvas;
+					}
+				}
+				return null;
+			}
+			
+			private function onResize(e:ResizeEvent):void
+			{
+				tabNav.width = e.currentTarget.width - 20;
+				tabNav.height = e.currentTarget.height - 38;	
+				linkBar.width = e.currentTarget.width - 62;
+			}
+			
+			private function onLinkActivate(e:ItemClickEvent):void
+			{
+				var ext:Extension = e.item as Extension;
+				_busyCursors ++;
+				CursorManager.setBusyCursor();
+				_injector.getInstanceOfExtension(ext,onInstanceReady);
+			}
+			
+			private function onInstanceReady(e:InjectionEvent):void
+			{
+				_busyCursors --;
+				if (_busyCursors == 0)
+				{
+					CursorManager.removeBusyCursor();
+				}
+				e.instance.run();				
+			}
+		]]>
+	</mx:Script>
+
+	<BackgroundPattern width="100%" height = "100%"/>
+
+	<mx:Image id="logo" x="10" y="10" width="565" height="50" scaleContent="false" />
+	<mx:LinkBar styleName="potomacLinkBar" x="62" y="35" width="375" height="25" id="linkBar" itemClick="onLinkActivate(event)">
+	</mx:LinkBar>	
+	<mx:TabNavigator id="tabNav" styleName="potomacTabNavigator" historyManagementEnabled="false" x="10" y="28"  change="onTabChange(event)" width="351" height="113">
+	</mx:TabNavigator>
+
+
+	
+</mx:Canvas>

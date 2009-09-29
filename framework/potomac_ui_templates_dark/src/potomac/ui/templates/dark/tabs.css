@@ -1,0 +1,31 @@
+.potomacTabNavigator {
+   tabHeight: 40;
+   cornerRadius: 9;
+   horizontalGap: 4;
+   horizontalAlign: right;
+   tabOffset: -20;
+   tabStyleName: "potomacTabs";
+   firstTabStyleName: "potomacTabs";
+   lastTabStyleName: "potomacTabs";
+   selectedTabTextStyleName: "potomacTabs";
+   paddingLeft:10;
+   paddingTop: 10;
+   paddingRight: 10;
+   paddingBottom: 10;
+   backgroundColor: #DCDCDC;
+}
+
+.potomacTabs {
+   fontSize: 14;
+   cornerRadius: 7;
+   fillAlphas: 1, 1;
+}
+
+.potomacLinkBar {
+   separatorColor: #ffffff;
+   rollOverColor: #cccccc;
+   color: #ffffff;
+   textRollOverColor: #ffffff;
+   textSelectedColor: #ffffff;
+   selectionColor: #666666;
+}

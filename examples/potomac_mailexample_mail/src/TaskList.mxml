@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+	<mx:Metadata>
+		[Part(id="tasklist",page="mailpage",folder="mail_sidebar",
+		      title="My Tasks",order="200")]		
+	</mx:Metadata>
+	<mx:CheckBox x="10" y="10" label="Walk the dog"/>
+	<mx:CheckBox x="10" y="40" label="Pick up dry cleaning" selected="true"/>
+	<mx:CheckBox x="10" y="70" label="Buy Milk"/>
+</mx:Canvas>

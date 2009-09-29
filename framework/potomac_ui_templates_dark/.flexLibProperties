@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties version="1">
+  <includeClasses>
+    <classEntry path="potomac.ui.templates.dark.BackgroundPattern"/>
+    <classEntry path="potomac.ui.templates.dark.DarkTemplate"/>
+    <classEntry path="potomac.ui.templates.dark.DynCanvas"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests/>
+</flexLibProperties>

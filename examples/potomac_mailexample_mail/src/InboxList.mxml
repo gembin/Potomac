@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+<mx:Metadata>
+	[Page(id="mailpage",title="Mail",icon="mail.png",order="10")]
+	[Folder(id="default",page="mailpage",folderType="naked",
+			location="top",relativeTo="n/a",percent="100")]
+	[Part(id="inboxlist",page="mailpage",title="Inbox",folder="default")]
+</mx:Metadata>
+<mx:Script>
+	<![CDATA[
+		import potomac.ui.PageInput;
+		import potomac.ui.PotomacUI;
+		import potomac.ui.PotomacEvent;
+		import potomac.ui.PartInput;
+		import potomac.ui.Folder;
+		import potomac.ui.Page;
+		import mx.events.ListEvent;
+		import potomac.ui.PartEvent;	
+		
+		private var _page:Page;
+
+		[Inject]
+		public var _mailDAO:MailDAO;
+		
+		[Inject]
+		public var _potomacUI:PotomacUI;
+		
+		public var _fakeService:FakeService = new FakeService();
+		
+		[Handles(event="partInitialize")]
+		public function onPartInit(e:PartEvent):void
+		{
+			PartEvent.sendBusy(this,"Loading...");
+			_page = e.page;
+			inbox.dataProvider = _mailDAO.getMail();
+			_fakeService.go(700);
+			
+			photoService.send();
+		}
+		
+		[Handles(source="inbox",event="itemDoubleClick")]
+		public function openItem(e:ListEvent):void
+		{
+			var itemsFolder:Folder = _page.openFolder("mail");
+			var partInput:PartInput = new PartInput();
+			partInput.mailID = inbox.selectedItem.id;
+			partInput.title = inbox.selectedItem.subject;
+			itemsFolder.openPart("mailitem",partInput);
+		}
+		
+		[Handles(source="_potomacUI",event="potomacPartClosed")]
+		public function partClosed(e:PotomacEvent):void
+		{
+			var itemsFolder:Folder = _page.getFolder("mail");
+			if (itemsFolder != null && itemsFolder.getPartReferences().length == 0)
+			{
+				_page.closeFolder(itemsFolder);
+			}
+		}
+		
+		[Handles(event="sendreceive")]
+		public function onSendReceive(e:Event):void
+		{
+			PartEvent.sendBusy(this,"Retrieving Messages...");
+			_fakeService.go(2500);
+		}
+		
+		[Handles(source="_fakeService",event="fakeComplete")]
+		public function onFakeServiceComplete(e:Event):void
+		{
+			dispatchEvent(new PartEvent(PartEvent.IDLE));
+		}
+		
+		public function photoResultHandler(e:Event):void
+		{
+			trace("results");
+		}
+	]]>
+</mx:Script>
+
+   <mx:HTTPService 
+        id="photoService"
+        url="http://api.flickr.com/services/feeds/photos_public.gne" 
+        resultFormat="e4x"
+        result="photoResultHandler(event);"
+    />
+
+	<mx:DataGrid id="inbox" doubleClickEnabled="true" x="0" y="0" width="100%" height="100%">
+		<mx:columns>
+			<mx:DataGridColumn headerText="From" dataField="from" width="50"/>
+			<mx:DataGridColumn headerText="Subject" dataField="subject" width="200"/>
+			<mx:DataGridColumn headerText="Recieved On" dataField="received" width="50"/>
+		</mx:columns>
+	</mx:DataGrid>
+	
+</mx:Canvas>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+	<mx:Metadata>
+		[Part(id="rsssearch",page="rss",folder="default",
+			title="Search",order="200")]		
+	</mx:Metadata>
+	<mx:Label x="10" y="10" text="Search functionality not mocked up" width="201" height="19"/>
+</mx:Canvas>

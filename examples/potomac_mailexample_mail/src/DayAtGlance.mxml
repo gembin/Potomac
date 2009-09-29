@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+	<mx:Metadata>
+		[Folder(id="mail_sidebar",page="mailpage",location="right",
+		   relativeTo="default",percent="25",folderType="accordion")]
+		[Part(id="dayglance",page="mailpage",folder="mail_sidebar",
+		   title="Todays Meetings",order="300")]		
+	</mx:Metadata>
+	<mx:DateChooser x="10" y="10"/>
+</mx:Canvas>

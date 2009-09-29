@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+	<mx:Metadata>
+		[Folder(id="feedlist",page="rss",location="right",relativeTo="default",percent="80",
+				folderType="titleWindow")]
+		[Part(id="feedlist",page="rss",folder="feedlist",title="Entries")]
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import potomac.ui.PartEvent;
+			import mx.events.ListEvent;
+			import potomac.ui.SelectionEvent;
+			import potomac.ui.SelectionService;
+			
+			[Inject]
+			public var _feedDAO:FeedDAO;
+			
+			[Handles(event="partSelectionChanged")]
+			public function onPartSelectionChange(e:SelectionEvent):void
+			{
+				if (e.partReference.id == "rsstree" && e.selection.length > 0 && e.selection[0].name() == "entry")
+				{
+					this.label = "Entries for " + e.selection[0].@name;
+					entries.dataProvider = _feedDAO.getEntries(e.selection[0].@name,e.selection[0].@url);
+				}
+			}
+			
+			[Handles(source="entries",event="change")]
+			public function onGridSelectionChange(e:ListEvent):void
+			{
+				dispatchEvent(new PartEvent(PartEvent.SELECTION_CHANGED,entries.selectedItems));
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:DataGrid id="entries" x="0" y="0" width="100%" height="100%">
+		<mx:columns>
+			<mx:DataGridColumn headerText="Title" dataField="title" width="200"/>
+			<mx:DataGridColumn headerText="Date" dataField="date" width="40"/>
+		</mx:columns>
+	</mx:DataGrid>
+</mx:Canvas>

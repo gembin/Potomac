@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+	<mx:Metadata>
+		[Folder(id="mail",page="mailpage",folderType="closeableTabs",
+			    location="bottom",relativeTo="default",percent="50",
+			    open="false")]
+		[Part(id="mailitem",title="Mail Item")]
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import potomac.ui.PotomacUI;
+			import potomac.ui.Page;
+			import potomac.ui.Folder;
+			import potomac.ui.PartEvent;
+			
+			[Inject]
+			public var _mailDAO:MailDAO;
+			
+			private var _mailItem:Object;
+		
+			
+			[Handles(event="partInitialize")]
+			public function onPartInit(e:PartEvent):void
+			{
+				if (e.input.newMail == true)
+				{
+					label = "Untitled";
+				}
+				else
+				{
+					_mailItem = _mailDAO.getMailItem(e.input.mailID);
+					label = _mailItem.subject;
+					from.text = _mailItem.from;
+					from.editable = false;
+					subject.text = _mailItem.subject;
+					subject.editable = false;
+					text.text = _mailItem.text;
+					text.editable = false;
+				}
+			}
+			
+			[Handles(source="from",event="change")]
+			[Handles(source="subject",event="change")]
+			[Handles(source="text",event="change")]
+			public function onTextChange(e:Event):void
+			{
+				dispatchEvent(new PartEvent(PartEvent.DIRTY));
+			}
+			
+			[Handles(event="partDoSave")]
+			public function onDoSave(e:PartEvent):void
+			{
+				PartEvent.sendBusy(this,"Sending Email...");
+				_mailDAO.sendMail(_mailItem,onSendComplete);
+			}
+			
+			public function onSendComplete(e:Event):void
+			{
+				dispatchEvent(new PartEvent(PartEvent.SAVE_COMPLETE));
+			}
+
+		]]>
+	</mx:Script>
+	<mx:Label x="10" y="10" text="From:"/>
+	<mx:Label x="10" y="36" text="Subject:"/>
+	<mx:TextInput id="subject" x="68" y="34" width="322"/>
+	<mx:TextInput id="from" x="68" y="8" width="322"/>
+	<mx:TextArea id="text" x="10" y="62" width="380" height="228"/>
+</mx:Canvas>

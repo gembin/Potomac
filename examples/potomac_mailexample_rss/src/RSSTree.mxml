@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+	<mx:Metadata>
+		[Page(id="rss",title="RSS",icon="rss.png")]
+		[Page(id="cal",title="Calendar",icon="calendar.png")]
+		[Page(id="twitter",title="Twitter",icon="twitter.png")]
+		[Part(id="rsstree",title="Feeds",page="rss",
+			folder="default",order="100")]
+	</mx:Metadata>
+	
+	<mx:Script>
+		<![CDATA[
+			import potomac.ui.PartEvent;
+			import mx.events.ListEvent;
+			
+			[Handles(source="feedsTree",event="change")]
+			public function onTreeSelection(e:ListEvent):void
+			{
+				dispatchEvent(new PartEvent(PartEvent.SELECTION_CHANGED,feedsTree.selectedItems));
+			}
+		]]>
+	</mx:Script>
+	
+	<mx:XML id="feeds">
+	<feeds>
+		<cat name="Category 1">
+			<entry name="Blog #1" url="x"/>
+			<entry name="Another BlogPost" url="x"/>
+			<entry name="Blog Three" url="x"/>
+			<entry name="Last Blog" url="x"/>
+		</cat>		
+		<cat name="Feed Category2">
+			<entry name="Blog #1" url="x"/>
+			<entry name="Another BlogPost" url="x"/>
+			<entry name="Blog Three" url="x"/>
+			<entry name="Last Blog" url="x"/>
+		</cat>	
+	</feeds>
+	</mx:XML>
+	<mx:Tree id="feedsTree" dataProvider="{feeds}" showRoot="false" borderStyle="none"
+		labelField="@name" x="0" y="0" width="100%" height="100%"></mx:Tree>
+</mx:Canvas>

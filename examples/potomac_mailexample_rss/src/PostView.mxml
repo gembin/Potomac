@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+	<mx:Metadata>
+		[Folder(id="postview",page="rss",
+				location="bottom",relativeTo="feedlist",percent="50",
+				folderType="naked")]
+		[Part(id="postview",page="rss",folder="postview",title="Post")]		
+	</mx:Metadata>
+	<mx:Script>
+		<![CDATA[
+			import potomac.ui.PartEvent;
+			import potomac.ui.SelectionEvent;
+			import potomac.ui.SelectionService;
+			
+			[Handles(event="partSelectionChanged")]
+			public function onPartSelectionChange(e:SelectionEvent):void
+			{
+				if (e.partReference.id == "feedlist" && e.selection.length > 0)
+				{
+					post.text = "Showing post: " + e.selection[0].title;
+					post.text += "\n\nOk we're really not but just pretend.";
+				}
+			}
+		]]>
+	</mx:Script>
+	<mx:TextArea id="post" x="0" y="0" width="100%" height="100%" wordWrap="true" editable="false"/>
+</mx:Canvas>

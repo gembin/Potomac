@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+	<mx:Metadata>
+		[Part(id="about",page="mailpage",folder="mail_sidebar",
+			title="About the Example",order="100")]
+	</mx:Metadata>
+	<mx:TextArea x="0" y="0" width="100%" height="100%" wordWrap="true" editable="false">
+		<mx:text><![CDATA[
+This is a quick demo to show the capabilities of Potomac.  All functionality is mocked up and fake.
+
+Some quick notes:
+ -Double click on a mail item to show the mail tabs
+ -Click New Mail to create a new mail item
+ -Notice that new mail items are editable and Potomac will prompt you to save during close
+ -Click Send/Receive to demonstrate the part 'busy' feature
+ -Notice that the different parts use different containers (some are tabs, some are accordions, some are 'naked')
+ -The Mail page code demonstrates how to open parts with PartInputs.
+ -The RSS page code demonstrates interpart communication.
+		]]></mx:text>
+	</mx:TextArea>
+</mx:Canvas>

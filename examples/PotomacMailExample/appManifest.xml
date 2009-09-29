@@ -1,0 +1,12 @@
+<application template='potomac_dark' enablesForFlags=''>
+<templateData>
+   <parameter name='logo' type='image' value='src/logo1.png' />
+</templateData>
+<bundles>
+   <bundle rsl='true'>potomac_core</bundle>
+   <bundle rsl='true'>potomac_ui</bundle>
+   <bundle rsl='true'>potomac_ui_templates_dark</bundle>
+   <bundle rsl='false'>potomac_mailexample_mail</bundle>
+   <bundle rsl='false'>potomac_mailexample_rss</bundle>
+</bundles>
+</application>

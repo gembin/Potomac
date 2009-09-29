@@ -1,0 +1,19 @@
+<bundle id='potomac_ui_templates_dark' version='' name='' activator=''>
+<requiredBundles>
+   <bundle>potomac_core</bundle>
+   <bundle>potomac_ui</bundle>
+</requiredBundles>
+<extensionPoints>
+</extensionPoints>
+<extensions>
+   <extension point='Template' class='potomac.ui.templates.dark.DarkTemplate' id='potomac_dark' properties='logo:image' codeStart='271' codeEnd='324' bundle='potomac_ui_templates_dark'/>
+   <extension point='Handles' class='potomac.ui.templates.dark.DarkTemplate' functionSignature='(e:potomac.ui.TemplateEvent):void' event='templateShowPage' codeStart='2690' codeEnd='2725' function='onShowPage' bundle='potomac_ui_templates_dark'/>
+   <extension point='Inject' class='potomac.ui.templates.dark.DarkTemplate' variableType='potomac.inject.Injector' variable='_injector' codeStart='991' codeEnd='1011' bundle='potomac_ui_templates_dark'/>
+   <extension point='Inject' class='potomac.ui.templates.dark.DarkTemplate' variableType='potomac.ui.PotomacUI' variable='_potomacUI' codeStart='882' codeEnd='903' bundle='potomac_ui_templates_dark'/>
+   <extension point='Handles' class='potomac.ui.templates.dark.DarkTemplate' functionSignature='(e:potomac.ui.TemplateEvent):void' event='templateClosePage' codeStart='2878' codeEnd='2914' function='onClosePage' bundle='potomac_ui_templates_dark'/>
+   <extension point='Handles' class='potomac.ui.templates.dark.DarkTemplate' functionSignature='(e:potomac.ui.TemplateEvent):void' event='templateOpenPage' codeStart='1471' codeEnd='1506' function='openPage' bundle='potomac_ui_templates_dark'/>
+   <extension point='Inject' class='potomac.ui.templates.dark.DarkTemplate' variableType='potomac.bundle.IBundleService' variable='_bundleService' codeStart='932' codeEnd='957' bundle='potomac_ui_templates_dark'/>
+   <extension point='Handles' class='potomac.ui.templates.dark.DarkTemplate' functionSignature='(e:potomac.ui.TemplateEvent):void' event='templateInitialize' codeStart='1079' codeEnd='1116' function='onTemplateInitialize' bundle='potomac_ui_templates_dark'/>
+   <extension point='Handles' class='potomac.ui.templates.dark.DarkTemplate' functionSignature='(e:potomac.ui.TemplateEvent):void' event='templatePageDirtyChange' codeStart='3171' codeEnd='3213' function='onPageDirtyChange' bundle='potomac_ui_templates_dark'/>
+</extensions>
+</bundle>

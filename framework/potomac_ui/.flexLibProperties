@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties version="1">
+  <includeClasses>
+    <classEntry path="potomac.ui.Action"/>
+    <classEntry path="potomac.ui.restricted.BusyCanvas"/>
+    <classEntry path="potomac.ui.FolderOptions"/>
+    <classEntry path="potomac.ui.PageOptions"/>
+    <classEntry path="potomac.ui.PotomacUI"/>
+    <classEntry path="potomac.ui.PageInput"/>
+    <classEntry path="potomac.ui.Page"/>
+    <classEntry path="potomac.ui.restricted.BusyImages"/>
+    <classEntry path="potomac.ui.FolderFactory"/>
+    <classEntry path="potomac.ui.Folder"/>
+    <classEntry path="potomac.ui.defaultUI.TabFolder"/>
+    <classEntry path="potomac.ui.PartReference"/>
+    <classEntry path="potomac.ui.PartOptions"/>
+    <classEntry path="potomac.ui.restricted.BusyOverlay"/>
+    <classEntry path="potomac.ui.defaultUI.NakedFolder"/>
+    <classEntry path="potomac.ui.restricted.Launcher"/>
+    <classEntry path="potomac.ui.PartExtensionManager"/>
+    <classEntry path="potomac.ui.TemplateEvent"/>
+    <classEntry path="potomac.ui.PageDescriptor"/>
+    <classEntry path="potomac.ui.PotomacEvent"/>
+    <classEntry path="potomac.ui.defaultUI.CloseableTabFolder"/>
+    <classEntry path="potomac.ui.SelectionService"/>
+    <classEntry path="potomac.ui.defaultUI.DefaultPage"/>
+    <classEntry path="potomac.ui.defaultUI.AccordionFolder"/>
+    <classEntry path="potomac.ui.defaultUI.TitleWindowFolder"/>
+    <classEntry path="potomac.ui.PartEvent"/>
+    <classEntry path="potomac.ui.defaultUI.DefaultBaseFolder"/>
+    <classEntry path="potomac.ui.PartInput"/>
+    <classEntry path="potomac.ui.PageFactory"/>
+    <classEntry path="potomac.ui.SelectionEvent"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests/>
+</flexLibProperties>
