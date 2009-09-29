@@ -73,7 +73,7 @@ package potomac.bundle
 		}
 		
 		/**
-		 * The arguments in the method signature.
+		 * An array of Argument objects representing arguments for this method.
 		 */		
 		public function get arguments():Array
 		{
