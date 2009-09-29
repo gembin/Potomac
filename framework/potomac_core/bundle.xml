@@ -10,9 +10,9 @@
 </extensionPoints>
 <extensions>
    <extension point='Injectable' class='potomac.core.SerializationService' singleton='true' codeStart='356' codeEnd='386' bundle='potomac_core'/>
-   <extension point='Inject' class='potomac.core.SerializationService' functionSignature='(bundleService:potomac.bundle.IBundleService,injector:potomac.inject.Injector):potomac.core.SerializationService' codeStart='535' codeEnd='609' function='SerializationService' bundle='potomac_core'/>
+   <extension point='Inject' class='potomac.core.SerializationService' functionSignature='(bundleService:potomac.bundle.IBundleService,injector:potomac.inject.Injector):potomac.core.SerializationService' codeStart='542' codeEnd='709' function='SerializationService' bundle='potomac_core'/>
    <extension point='Injectable' class='potomac.core.StorageService' singleton='true' codeStart='62' codeEnd='92' bundle='potomac_core'/>
-   <extension point='InjectionListener' class='potomac.restricted.HandlesFilter' codeStart='463' codeEnd='547' bundle='potomac_core'/>
-   <extension point='Inject' class='potomac.restricted.HandlesFilter' functionSignature='(bundleSrv:potomac.bundle.IBundleService):potomac.restricted.HandlesFilter' codeStart='583' codeEnd='622' function='HandlesFilter' bundle='potomac_core'/>
+   <extension point='InjectionListener' class='potomac.restricted.HandlesFilter' codeStart='470' codeEnd='2798' bundle='potomac_core'/>
+   <extension point='Inject' class='potomac.restricted.HandlesFilter' functionSignature='(bundleSrv:potomac.bundle.IBundleService):potomac.restricted.HandlesFilter' codeStart='590' codeEnd='748' function='HandlesFilter' bundle='potomac_core'/>
 </extensions>
 </bundle>

@@ -8,7 +8,7 @@ package potomac.derived {
       [Embed(source="appCargo.xml", mimeType="application/octet-stream")]
       private var appCargoData:Class;
       private var templateID:String = "potomac_dark";
-      [Embed(source="C:/Users/cgross/runtime-New_configuration/PotomacMailExample/src/logo1.png")]
+      [Embed(source="C:/Users/cgross/potomac/examples/PotomacMailExample/src/logo1.png")]
       private var templateProp_logo:Class;
       private var templateData:Object = {logo:new templateProp_logo()};
       private var extAssets:ExtensionAssets;
