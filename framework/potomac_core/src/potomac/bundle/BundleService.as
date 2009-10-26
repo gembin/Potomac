@@ -15,12 +15,17 @@ package potomac.bundle
 	import flash.events.IEventDispatcher;
 	import flash.events.IOErrorEvent;
 	import flash.net.URLLoader;
+	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
 	import flash.system.ApplicationDomain;
+	import flash.system.Capabilities;
+	import flash.utils.ByteArray;
 	import flash.utils.getDefinitionByName;
 	
 	import mx.core.Application;
 	import mx.events.ModuleEvent;
+	import mx.logging.ILogger;
+	import mx.logging.Log;
 	import mx.modules.IModuleInfo;
 	import mx.modules.ModuleManager;
 	
@@ -65,6 +70,7 @@ package potomac.bundle
 		//bundles is a dynamic collection where the properties are the bundle ids
 		//and the values are other dynamic objects whose properties include 'moduleLoaded',
 		//'bundleLoaded','moduleLoading','requiredBundles','rsl','activatorName','activator', and temporarily 'bundleXML'.
+		//also 'version','useAIRCache'
 		private var bundles:Object = new Object();
 		
 		//A simple array that holds objects that we don't want to be garbage collected until we're
@@ -77,6 +83,9 @@ package potomac.bundle
 		
 		//dynamic collection,bundleIDS as props, moduleInfos as values.
 		private var bundleModuleInfos:Object = new Object();
+		
+		//dyn collectin, bundleIDs to URLLoaders (used in AIR only)
+		private var bundleLoaders:Object = new Object();
 
 		//Array of Extensions
 		private var extensions:Array = new Array();
@@ -89,6 +98,11 @@ package potomac.bundle
 		private var _injector:Injector;
 		
 		private var _enablesForFlags:Array;
+		
+		public var _airBundlesURL:String = "";
+		public var airDisableCaching:Boolean = true;
+		
+		private static var logger:ILogger = Log.getLogger("potomac.bundle.BundleService");
 		
 		/**
 		 * Callers should not construct instances of BundleService.  It is available for 
@@ -117,13 +131,40 @@ package potomac.bundle
 		}
 		
 		/**
-		 * Sets the flags that determine which extensions are enabled or disabled.  
-		 *  
-		 * @param flags Array of string flags. 
+		 * An array of Strings determine which extensions are enabled or disabled based on the 
+		 * 'enablesFor' attribute in each extension.  
 		 */
-		public function setEnablesForFlags(flags:Array):void
+		public function set enablesForFlags(flags:Array):void
 		{
 			_enablesForFlags = flags;
+		}
+		
+		/**
+		 * An array of Strings determine which extensions are enabled or disabled based on the 
+		 * 'enablesFor' attribute in each extension.  
+		 */
+		public function get enablesForFlags():Array
+		{
+			return _enablesForFlags;
+		}
+		
+		/**
+		 * The remote URL where the bundles will be downloaded when running inside AIR.
+		 */
+		public function set airBundlesURL(value:String):void
+		{
+			_airBundlesURL = value;
+			if (_airBundlesURL.charAt(_airBundlesURL.length -1) == "/")
+			{
+				_airBundlesURL = _airBundlesURL.substr(0,_airBundlesURL.length -1);
+			}	
+		}
+		/**
+		 * The remote URL where the bundles will be downloaded when running inside AIR. 
+		 */
+		public function get airBundlesURL():String
+		{
+			return _airBundlesURL;
 		}
 		
 		/**
@@ -183,7 +224,21 @@ package potomac.bundle
 				    dontGC.push(loader);
 				    bundleXMLCountdown ++;
 				    
-				    loader.load(new URLRequest(baseURL + "bundles/" + instDesc.bundleID + "/bundle.xml"));
+				    if (inAIR())
+				    {
+				    	if (inAIRandBuilder())
+				    	{
+				    		loader.load(new URLRequest("app:/bundles/" + instDesc.bundleID + "/bundle.xml"));
+				    	}	
+				    	else
+				    	{
+				    		loader.load(new URLRequest(airBundlesURL + "/" + instDesc.bundleID + "/bundle.xml"));
+				    	}
+				    }
+				    else
+				    {
+				    	loader.load(new URLRequest(baseURL + "bundles/" + instDesc.bundleID + "/bundle.xml"));
+				    }
 		        }	
 			}
 			
@@ -192,17 +247,21 @@ package potomac.bundle
 			{
 				parseExtensions();
 				dispatchEvent(new BundleEvent(BundleEvent.BUNDLES_INSTALLED));
+				
+				triggerRSLActivators();
 			}	
-			
-			//trigger activators for any RSLs
-			for (i = 0; i < installDescriptors.length; i++)
+					
+		}
+		
+		private function triggerRSLActivators():void
+		{
+			for (var bundleID:String in bundles)
 			{
-				instDesc = BundleInstallDescriptor(installDescriptors[i]);
-				if (instDesc.isRSL)
+				if (bundles[bundleID].rsl)
 				{
-					triggerActivator(instDesc.bundleID,new BundleEvent(BundleEvent.BUNDLE_READY,instDesc.bundleID));
+					triggerActivator(bundleID,new BundleEvent(BundleEvent.BUNDLE_READY,bundleID));
 				}
-			}			
+			}
 		}
 			
 		private function onBundleXMLReady(e:Event):void
@@ -224,13 +283,69 @@ package potomac.bundle
 			
 			//id should be set after break from loop
 			
-			parseBundleXML(id,new XML(loader.data));
+			var newXML:XML = new XML(loader.data);
+			
+			if (inAIR() && !airDisableCaching)
+		    {
+				logger.info("Checking version in cache for " + id);
+		    	bundles[id].useAIRCache = false;
+		    	var fileClass:Class = getDefinitionByName("flash.filesystem.File") as Class;
+				var bundleXML:Object = fileClass.applicationStorageDirectory.resolvePath("bundles/" + id + "/bundle.xml");
+				if (bundleXML.exists)
+				{
+					var fileStreamClass:Class = getDefinitionByName("flash.filesystem.FileStream") as Class;
+				    var fileStream:Object = new fileStreamClass();
+				    fileStream.open(bundleXML,"read");
+				    var xmlData:String = fileStream.readUTF();
+				    fileStream.close();
+				    
+				    var xml:XML = new XML(xmlData);
+
+				    if (xml.@version == newXML.@version)
+				    {
+						logger.info("Using cached swf for " + id);
+						bundles[id].useAIRCache = true;
+				    }
+					else
+					{
+						logger.info("Using remote swf for " + id);
+					}
+				}			
+		    	
+		    	if (!bundles[id].useAIRCache)
+		    	{
+				    bundleXML = fileClass.applicationStorageDirectory.resolvePath("bundles/" + id + "/bundle.xml");
+				    fileStreamClass = getDefinitionByName("flash.filesystem.FileStream") as Class;
+				    fileStream = new fileStreamClass();
+				    fileStream.open(bundleXML,"write");
+				    fileStream.writeUTF(loader.data);
+				    fileStream.close();
+				    
+				    //remove the older SWF so we make sure we don't accidentally use it later and believe
+				    //its a good cached version
+				    var bundleSWF:Object = fileClass.applicationStorageDirectory.resolvePath("bundles/" + id + "/" + id + ".swf");
+				    if (bundleSWF.exists)
+				    {
+				    	bundleSWF.deleteFile();
+				    } 
+				}
+			}
+			
+			handleBundleXML(id,newXML);
+			
+		}
+		
+		private function handleBundleXML(bundle:String,xml:XML):void
+		{
+			
+			parseBundleXML(bundle,xml);
 			
 			bundleXMLCountdown --;
 			if (bundleXMLCountdown == 0)
 			{
 				parseExtensions();
 				dispatchEvent(new BundleEvent(BundleEvent.BUNDLES_INSTALLED));
+				triggerRSLActivators();
 				if (newlyAddedExtensions.length >0)
 	        	{
 	        		var newExts:Array = newlyAddedExtensions;
@@ -245,8 +360,45 @@ package potomac.bundle
              var loader:URLLoader = URLLoader(e.target);
             loader.removeEventListener(IOErrorEvent.IO_ERROR,onBundleXMLLoadError);
             loader.removeEventListener(Event.COMPLETE,onBundleXMLReady);
-
 			dontGC.splice(dontGC.indexOf(loader),1);
+			
+			for (var id:String in bundleXMLLoaders)
+			{
+				if (bundleXMLLoaders[id] == loader)
+				{					
+					bundleXMLLoaders[id] = null;
+					delete bundleXMLLoaders[id];
+					break;
+				}
+			}
+			
+			
+			
+			if (inAIR() && !airDisableCaching)
+			{
+				logger.warn("Unable to retrieve remote bundle.xml for " + id + ".  Falling back to cached bundle.xml in app-storage.");
+				//load bundlexml from app-storage
+				bundles[id].useAIRCache = true;
+				var fileClass:Class = getDefinitionByName("flash.filesystem.File") as Class;
+				var bundleXML:Object = fileClass.applicationStorageDirectory.resolvePath("bundles/" + id + "/bundle.xml");
+				if (!bundleXML.exists)					
+				{
+					logger.error("No cached bundle.xml for " + id + " found.  Throwing original IO error.");
+					throw new Error(e.text);
+				}
+				
+				var fileStreamClass:Class = getDefinitionByName("flash.filesystem.FileStream") as Class;
+				var fileStream:Object = new fileStreamClass();
+				fileStream.open(bundleXML,"read");
+				var xmlData:String = fileStream.readUTF();
+				fileStream.close();
+					
+				var xml:XML = new XML(xmlData);
+	
+				handleBundleXML(id,xml);
+				return;
+			}
+			
 			throw new Error(e.text);
 		}
 		
@@ -319,13 +471,14 @@ package potomac.bundle
 				return;
 			}
 			
-			var moduleInfo:IModuleInfo = ModuleManager.getModule(baseURL + "bundles/" + id + "/" + id + ".swf");
-			moduleInfo.addEventListener(ModuleEvent.READY,onModuleReady);
-			moduleInfo.addEventListener(ModuleEvent.ERROR,onModuleError);
-			bundleModuleInfos[id] = moduleInfo;
-		    dontGC.push(moduleInfo);
-		    setModuleLoading(id);
-		    moduleInfo.load(ApplicationDomain.currentDomain);
+			if (inAIR())
+			{
+				loadModuleInAIR(id);
+			}
+			else
+			{
+				loadModuleInBrowser(id);
+			}
 			
 			var reqs:Array = getRequiredBundles(id);
 			
@@ -333,15 +486,107 @@ package potomac.bundle
             {
             	if (!isModuleLoading(reqs[i])) //dont load em if theyre already loaded/loading
             	{
-            		moduleInfo = ModuleManager.getModule(baseURL + "bundles/" + reqs[i] + "/" + reqs[i] + ".swf");
-		            moduleInfo.addEventListener(ModuleEvent.READY,onModuleReady);
-		            moduleInfo.addEventListener(ModuleEvent.ERROR,onModuleError);
-		            dontGC.push(moduleInfo);
-		            setModuleLoading(reqs[i]);
-		            bundleModuleInfos[reqs[i]] = moduleInfo;
-                    moduleInfo.load(ApplicationDomain.currentDomain); 
+            		if (inAIR())
+            		{
+            			loadModuleInAIR(reqs[i]);
+            		}
+            		else
+            		{
+            			loadModuleInBrowser(reqs[i]);	
+            		}
             	}            	
             }               
+		}
+		
+		private function loadModuleInBrowser(bundle:String):void
+		{
+			var moduleInfo:IModuleInfo = ModuleManager.getModule(baseURL + "bundles/" + bundle + "/" + bundle + ".swf");
+			moduleInfo.addEventListener(ModuleEvent.READY,onModuleReady);
+			moduleInfo.addEventListener(ModuleEvent.ERROR,onModuleError);
+			bundleModuleInfos[bundle] = moduleInfo;
+		    dontGC.push(moduleInfo);
+		    setModuleLoading(bundle);
+			logger.info("Loading bundle swf: " + moduleInfo.url);
+		    moduleInfo.load(ApplicationDomain.currentDomain);
+		}
+		
+		private function loadModuleInAIR(bundle:String):void
+		{
+			var url:String = "";
+			if (inAIRandBuilder())
+			{
+				//load it from app:/bundles (i.e. bin-debug)
+				url = "app:/bundles/" + bundle + "/" + bundle + ".swf";
+			}
+			else
+			{				
+				url = airBundlesURL + "/" + bundle + "/" + bundle + ".swf";
+				if (!airDisableCaching && bundles[bundle].useAIRCache == true)
+				{
+					var fileClass:Class = getDefinitionByName("flash.filesystem.File") as Class;
+			   		var bundleSWF:Object = fileClass.applicationStorageDirectory.resolvePath("bundles/" + bundle + "/" + bundle +".swf");
+			   		if (bundleSWF.exists)
+					{						
+						url = bundleSWF.url;
+					}
+					else
+					{
+						logger.warn("Cached swf for " + bundle + " not found.  Falling back to remote swf.");
+					}
+				 }
+			}
+
+			var loader:URLLoader = new URLLoader();
+			loader.dataFormat = URLLoaderDataFormat.BINARY;
+			loader.addEventListener(Event.COMPLETE, onLoaderComplete);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, onLoaderError);
+			bundleLoaders[bundle] = loader;
+			setModuleLoading(bundle);
+			bundles[bundle].url = url;
+			logger.info("Loading bundle swf: "+ url);
+			loader.load(new URLRequest(url));
+		}
+		
+		private function onLoaderComplete(e:Event):void
+		{
+			var data:ByteArray;
+			
+			for (var id:String in bundleLoaders)
+			{
+				if (bundleLoaders[id] == e.target)
+				{					
+					data = ByteArray(URLLoader(bundleLoaders[id]).data);
+					bundleLoaders[id] = null;
+					delete bundleLoaders[id];
+					break;
+				}
+			}
+			
+			if (!airDisableCaching && String(bundles[id].url).substr(0,12) != "app-storage:")
+		    {
+			    var fileClass:Class = getDefinitionByName("flash.filesystem.File") as Class;
+			    var bundleSWF:Object = fileClass.applicationStorageDirectory.resolvePath("bundles/" + id + "/" + id +".swf");
+			    var fileStreamClass:Class = getDefinitionByName("flash.filesystem.FileStream") as Class;
+			    var fileStream:Object = new fileStreamClass();
+			    fileStream.open(bundleSWF,"write");
+			    fileStream.writeBytes(data);
+			    fileStream.close();
+			}
+
+			
+			var moduleInfo:IModuleInfo = ModuleManager.getModule(bundles[id].url);
+			moduleInfo.addEventListener(ModuleEvent.READY,onModuleReady);
+			moduleInfo.addEventListener(ModuleEvent.ERROR,onModuleError);
+			bundleModuleInfos[id] = moduleInfo;
+		    dontGC.push(moduleInfo);
+		    moduleInfo.load(ApplicationDomain.currentDomain,null,data);			
+		}
+		
+		private function onLoaderError(e:IOErrorEvent):void
+		{
+            e.target.removeEventListener(Event.COMPLETE,onLoaderComplete);
+            e.target.removeEventListener(IOErrorEvent.IO_ERROR,onLoaderError);
+            throw new Error(e.text);		
 		}
 		
 		private function onModuleReady(e:ModuleEvent):void
@@ -462,7 +707,8 @@ package potomac.bundle
         
         private function parseBundleXML(bundleID:String,bundleXML:XML):void
         {
-        	bundles[bundleID].activatorName = bundleXML.@activator;        	
+        	bundles[bundleID].activatorName = bundleXML.@activator;      
+        	bundles[bundleID].version = bundleXML.@version;  	
         	
         	//required bundles
         	var reqs:Array = new Array();
@@ -550,7 +796,8 @@ package potomac.bundle
         
         private function triggerActivator(bundleID:String,event:BundleEvent):void
         {
-            if (bundles[bundleID].activatorName != null && bundles[bundleID].activatorName != "")
+            if (bundles[bundleID].activatorName != null && bundles[bundleID].activatorName != "" &&
+            	bundles[bundleID].activator == null)
             {
             	try 
             	{
@@ -561,9 +808,21 @@ package potomac.bundle
             	}
         		var activator:IEventDispatcher = _injector.getInstanceImmediate(activatorClass) as IEventDispatcher;
         		//in the futre, when stopping is added, we'll need to save the activator like this to call stop on it later
-        		//bundles[bundleID].activator = activator;
+        		bundles[bundleID].activator = activator;
         		activator.dispatchEvent(event);
             }
+        }
+        
+        private function inAIR():Boolean
+        {
+        	return Capabilities.playerType == "Desktop";
+        }
+        
+        private function inAIRandBuilder():Boolean
+        {
+        	var fileClass:Class = getDefinitionByName("flash.filesystem.File") as Class;
+        	var bundlesDir:Object = fileClass.applicationDirectory.resolvePath("bundles/");
+        	return bundlesDir.exists;
         }
 
 	}

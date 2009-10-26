@@ -19,10 +19,10 @@
 </extensionPoints>
 <extensions>
    <extension point='Injectable' class='potomac.core.SerializationService' singleton='true' codeStart='356' codeEnd='386' bundle='potomac_core'/>
-   <extension point='Inject' class='potomac.core.SerializationService' functionSignature='(bundleService:potomac.bundle.IBundleService,injector:potomac.inject.Injector):potomac.core.SerializationService' codeStart='542' codeEnd='709' function='SerializationService' bundle='potomac_core'/>
+   <extension point='Inject' class='potomac.core.SerializationService' functionSignature='(bundleService:potomac.bundle.IBundleService,injector:potomac.inject.Injector):potomac.core.SerializationService' codeStart='535' codeEnd='609' function='SerializationService' bundle='potomac_core'/>
    <extension point='Injectable' class='potomac.core.StorageService' singleton='true' codeStart='62' codeEnd='92' bundle='potomac_core'/>
-   <extension point='InjectionListener' class='potomac.restricted.HandlesFilter' codeStart='470' codeEnd='2798' bundle='potomac_core'/>
-   <extension point='Inject' class='potomac.restricted.HandlesFilter' functionSignature='(bundleSrv:potomac.bundle.IBundleService):potomac.restricted.HandlesFilter' codeStart='590' codeEnd='748' function='HandlesFilter' bundle='potomac_core'/>
+   <extension point='InjectionListener' class='potomac.restricted.HandlesFilter' codeStart='463' codeEnd='547' bundle='potomac_core'/>
+   <extension point='Inject' class='potomac.restricted.HandlesFilter' functionSignature='(bundleSrv:potomac.bundle.IBundleService):potomac.restricted.HandlesFilter' codeStart='583' codeEnd='622' function='HandlesFilter' bundle='potomac_core'/>
 </extensions>
 </bundle>
    <bundle id='potomac_ui' version='0.5' name='Potomac UI' activator=''>
@@ -41,26 +41,26 @@
 </extensionPoints>
 <extensions>
    <extension point='Injectable' class='potomac.ui.FolderFactory' singleton='true' codeStart='868' codeEnd='898' bundle='potomac_ui'/>
-   <extension point='Inject' class='potomac.ui.FolderFactory' functionSignature='(injector:potomac.inject.Injector,bundleService:potomac.bundle.IBundleService):potomac.ui.FolderFactory' codeStart='1367' codeEnd='1650' function='FolderFactory' bundle='potomac_ui'/>
+   <extension point='Inject' class='potomac.ui.FolderFactory' functionSignature='(injector:potomac.inject.Injector,bundleService:potomac.bundle.IBundleService):potomac.ui.FolderFactory' codeStart='1360' codeEnd='1421' function='FolderFactory' bundle='potomac_ui'/>
    <extension point='Injectable' class='potomac.ui.PageFactory' singleton='true' codeStart='861' codeEnd='891' bundle='potomac_ui'/>
-   <extension point='Inject' class='potomac.ui.PageFactory' functionSignature='(injector:potomac.inject.Injector,bundleService:potomac.bundle.IBundleService):potomac.ui.PageFactory' codeStart='1304' codeEnd='1585' function='PageFactory' bundle='potomac_ui'/>
+   <extension point='Inject' class='potomac.ui.PageFactory' functionSignature='(injector:potomac.inject.Injector,bundleService:potomac.bundle.IBundleService):potomac.ui.PageFactory' codeStart='1297' codeEnd='1356' function='PageFactory' bundle='potomac_ui'/>
    <extension point='Injectable' class='potomac.ui.PartExtensionManager' singleton='true' codeStart='995' codeEnd='1025' bundle='potomac_ui'/>
-   <extension point='Inject' class='potomac.ui.PartExtensionManager' functionSignature='(bundleService:potomac.bundle.IBundleService,injector:potomac.inject.Injector):potomac.ui.PartExtensionManager' codeStart='1399' codeEnd='1547' function='PartExtensionManager' bundle='potomac_ui'/>
+   <extension point='Inject' class='potomac.ui.PartExtensionManager' functionSignature='(bundleService:potomac.bundle.IBundleService,injector:potomac.inject.Injector):potomac.ui.PartExtensionManager' codeStart='1392' codeEnd='1466' function='PartExtensionManager' bundle='potomac_ui'/>
    <extension point='Injectable' class='potomac.ui.PotomacUI' singleton='true' codeStart='986' codeEnd='1016' bundle='potomac_ui'/>
-   <extension point='Inject' class='potomac.ui.PotomacUI' functionSignature='(bundleSrv:potomac.bundle.IBundleService,pageFactory:potomac.ui.PageFactory):potomac.ui.PotomacUI' codeStart='1635' codeEnd='2311' function='PotomacUI' bundle='potomac_ui'/>
+   <extension point='Inject' class='potomac.ui.PotomacUI' functionSignature='(bundleSrv:potomac.bundle.IBundleService,pageFactory:potomac.ui.PageFactory):potomac.ui.PotomacUI' codeStart='1628' codeEnd='1690' function='PotomacUI' bundle='potomac_ui'/>
    <extension point='Injectable' class='potomac.ui.SelectionService' singleton='true' codeStart='645' codeEnd='675' bundle='potomac_ui'/>
    <extension point='FolderType' class='potomac.ui.defaultUI.AccordionFolder' id='accordion' codeStart='1215' codeEnd='1243' bundle='potomac_ui'/>
-   <extension point='Inject' class='potomac.ui.defaultUI.AccordionFolder' functionSignature='(injector:potomac.inject.Injector,partExtensionMgr:potomac.ui.PartExtensionManager,selectionSrv:potomac.ui.SelectionService,potomacUI:potomac.ui.PotomacUI):potomac.ui.defaultUI.AccordionFolder' codeStart='1630' codeEnd='1833' function='AccordionFolder' bundle='potomac_ui'/>
+   <extension point='Inject' class='potomac.ui.defaultUI.AccordionFolder' functionSignature='(injector:potomac.inject.Injector,partExtensionMgr:potomac.ui.PartExtensionManager,selectionSrv:potomac.ui.SelectionService,potomacUI:potomac.ui.PotomacUI):potomac.ui.defaultUI.AccordionFolder' codeStart='1623' codeEnd='1750' function='AccordionFolder' bundle='potomac_ui'/>
    <extension point='FolderType' class='potomac.ui.defaultUI.CloseableTabFolder' id='closeableTabs' codeStart='1048' codeEnd='1080' bundle='potomac_ui'/>
-   <extension point='Inject' class='potomac.ui.defaultUI.CloseableTabFolder' functionSignature='(injector:potomac.inject.Injector,partExtensionMgr:potomac.ui.PartExtensionManager,selectionSrv:potomac.ui.SelectionService,potomacUI:potomac.ui.PotomacUI):potomac.ui.defaultUI.CloseableTabFolder' codeStart='1484' codeEnd='1690' function='CloseableTabFolder' bundle='potomac_ui'/>
+   <extension point='Inject' class='potomac.ui.defaultUI.CloseableTabFolder' functionSignature='(injector:potomac.inject.Injector,partExtensionMgr:potomac.ui.PartExtensionManager,selectionSrv:potomac.ui.SelectionService,potomacUI:potomac.ui.PotomacUI):potomac.ui.defaultUI.CloseableTabFolder' codeStart='1477' codeEnd='1607' function='CloseableTabFolder' bundle='potomac_ui'/>
    <extension point='PageType' class='potomac.ui.defaultUI.DefaultPage' id='default' codeStart='1072' codeEnd='1096' bundle='potomac_ui'/>
-   <extension point='Inject' class='potomac.ui.defaultUI.DefaultPage' functionSignature='(folderFactory:potomac.ui.FolderFactory,potomacUI:potomac.ui.PotomacUI,bundleService:potomac.bundle.IBundleService,partExtensionMgr:potomac.ui.PartExtensionManager):potomac.ui.defaultUI.DefaultPage' codeStart='1582' codeEnd='1886' function='DefaultPage' bundle='potomac_ui'/>
+   <extension point='Inject' class='potomac.ui.defaultUI.DefaultPage' functionSignature='(folderFactory:potomac.ui.FolderFactory,potomacUI:potomac.ui.PotomacUI,bundleService:potomac.bundle.IBundleService,partExtensionMgr:potomac.ui.PartExtensionManager):potomac.ui.defaultUI.DefaultPage' codeStart='1575' codeEnd='1696' function='DefaultPage' bundle='potomac_ui'/>
    <extension point='FolderType' class='potomac.ui.defaultUI.NakedFolder' id='naked' codeStart='902' codeEnd='926' bundle='potomac_ui'/>
-   <extension point='Inject' class='potomac.ui.defaultUI.NakedFolder' functionSignature='(injector:potomac.inject.Injector,partExtensionMgr:potomac.ui.PartExtensionManager,selectionSrv:potomac.ui.SelectionService,potomacUI:potomac.ui.PotomacUI):potomac.ui.defaultUI.NakedFolder' codeStart='1299' codeEnd='1498' function='NakedFolder' bundle='potomac_ui'/>
+   <extension point='Inject' class='potomac.ui.defaultUI.NakedFolder' functionSignature='(injector:potomac.inject.Injector,partExtensionMgr:potomac.ui.PartExtensionManager,selectionSrv:potomac.ui.SelectionService,potomacUI:potomac.ui.PotomacUI):potomac.ui.defaultUI.NakedFolder' codeStart='1292' codeEnd='1415' function='NakedFolder' bundle='potomac_ui'/>
    <extension point='FolderType' class='potomac.ui.defaultUI.TabFolder' id='tabs' codeStart='946' codeEnd='969' bundle='potomac_ui'/>
-   <extension point='Inject' class='potomac.ui.defaultUI.TabFolder' functionSignature='(injector:potomac.inject.Injector,partExtensionMgr:potomac.ui.PartExtensionManager,selectionSrv:potomac.ui.SelectionService,potomacUI:potomac.ui.PotomacUI):potomac.ui.defaultUI.TabFolder' codeStart='1352' codeEnd='1549' function='TabFolder' bundle='potomac_ui'/>
+   <extension point='Inject' class='potomac.ui.defaultUI.TabFolder' functionSignature='(injector:potomac.inject.Injector,partExtensionMgr:potomac.ui.PartExtensionManager,selectionSrv:potomac.ui.SelectionService,potomacUI:potomac.ui.PotomacUI):potomac.ui.defaultUI.TabFolder' codeStart='1345' codeEnd='1466' function='TabFolder' bundle='potomac_ui'/>
    <extension point='FolderType' class='potomac.ui.defaultUI.TitleWindowFolder' id='titleWindow' codeStart='872' codeEnd='902' bundle='potomac_ui'/>
-   <extension point='Inject' class='potomac.ui.defaultUI.TitleWindowFolder' functionSignature='(injector:potomac.inject.Injector,partExtensionMgr:potomac.ui.PartExtensionManager,selectionSrv:potomac.ui.SelectionService,potomacUI:potomac.ui.PotomacUI):potomac.ui.defaultUI.TitleWindowFolder' codeStart='1297' codeEnd='1502' function='TitleWindowFolder' bundle='potomac_ui'/>
+   <extension point='Inject' class='potomac.ui.defaultUI.TitleWindowFolder' functionSignature='(injector:potomac.inject.Injector,partExtensionMgr:potomac.ui.PartExtensionManager,selectionSrv:potomac.ui.SelectionService,potomacUI:potomac.ui.PotomacUI):potomac.ui.defaultUI.TitleWindowFolder' codeStart='1290' codeEnd='1419' function='TitleWindowFolder' bundle='potomac_ui'/>
 </extensions>
 </bundle>
    <bundle id='potomac_ui_templates_dark' version='' name='' activator=''>
@@ -73,11 +73,11 @@
 <extensions>
    <extension point='Template' class='potomac.ui.templates.dark.DarkTemplate' id='potomac_dark' properties='logo:image' codeStart='271' codeEnd='324' bundle='potomac_ui_templates_dark'/>
    <extension point='Handles' class='potomac.ui.templates.dark.DarkTemplate' functionSignature='(e:potomac.ui.TemplateEvent):void' event='templateShowPage' codeStart='2690' codeEnd='2725' function='onShowPage' bundle='potomac_ui_templates_dark'/>
-   <extension point='Inject' class='potomac.ui.templates.dark.DarkTemplate' variableType='potomac.inject.Injector' variable='_injector' codeStart='991' codeEnd='1020' bundle='potomac_ui_templates_dark'/>
-   <extension point='Inject' class='potomac.ui.templates.dark.DarkTemplate' variableType='potomac.ui.PotomacUI' variable='_potomacUI' codeStart='882' codeEnd='913' bundle='potomac_ui_templates_dark'/>
+   <extension point='Inject' class='potomac.ui.templates.dark.DarkTemplate' variableType='potomac.inject.Injector' variable='_injector' codeStart='991' codeEnd='1011' bundle='potomac_ui_templates_dark'/>
+   <extension point='Inject' class='potomac.ui.templates.dark.DarkTemplate' variableType='potomac.ui.PotomacUI' variable='_potomacUI' codeStart='882' codeEnd='903' bundle='potomac_ui_templates_dark'/>
    <extension point='Handles' class='potomac.ui.templates.dark.DarkTemplate' functionSignature='(e:potomac.ui.TemplateEvent):void' event='templateClosePage' codeStart='2878' codeEnd='2914' function='onClosePage' bundle='potomac_ui_templates_dark'/>
    <extension point='Handles' class='potomac.ui.templates.dark.DarkTemplate' functionSignature='(e:potomac.ui.TemplateEvent):void' event='templateOpenPage' codeStart='1471' codeEnd='1506' function='openPage' bundle='potomac_ui_templates_dark'/>
-   <extension point='Inject' class='potomac.ui.templates.dark.DarkTemplate' variableType='potomac.bundle.IBundleService' variable='_bundleService' codeStart='932' codeEnd='972' bundle='potomac_ui_templates_dark'/>
+   <extension point='Inject' class='potomac.ui.templates.dark.DarkTemplate' variableType='potomac.bundle.IBundleService' variable='_bundleService' codeStart='932' codeEnd='957' bundle='potomac_ui_templates_dark'/>
    <extension point='Handles' class='potomac.ui.templates.dark.DarkTemplate' functionSignature='(e:potomac.ui.TemplateEvent):void' event='templateInitialize' codeStart='1079' codeEnd='1116' function='onTemplateInitialize' bundle='potomac_ui_templates_dark'/>
    <extension point='Handles' class='potomac.ui.templates.dark.DarkTemplate' functionSignature='(e:potomac.ui.TemplateEvent):void' event='templatePageDirtyChange' codeStart='3171' codeEnd='3213' function='onPageDirtyChange' bundle='potomac_ui_templates_dark'/>
 </extensions>

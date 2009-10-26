@@ -33,12 +33,14 @@ package potomac.ui.restricted
 		private static var _templateID:String;
 		private static var _templateData:Object;
 
-		public static function launch(appCargo:XML,templateID:String,templateData:Object,enablesForFlags:Array):void
+		public static function launch(appCargo:XML,templateID:String,templateData:Object,enablesForFlags:Array,airBundlesURL:String,airDisableCaching:Boolean):void
 		{
 			_templateID = templateID;
 			_templateData = templateData;
 			bundleService = new BundleService();
-			bundleService.setEnablesForFlags(enablesForFlags);		
+			bundleService.enablesForFlags = enablesForFlags;
+			bundleService.airBundlesURL = airBundlesURL;
+			bundleService.airDisableCaching = airDisableCaching;		
 			injector = new Injector(bundleService);			
 			bundleService.injector = injector;
 							

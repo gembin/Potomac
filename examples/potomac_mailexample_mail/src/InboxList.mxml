@@ -34,8 +34,6 @@
 			_page = e.page;
 			inbox.dataProvider = _mailDAO.getMail();
 			_fakeService.go(700);
-			
-			photoService.send();
 		}
 		
 		[Handles(source="inbox",event="itemDoubleClick")]
@@ -70,20 +68,8 @@
 		{
 			dispatchEvent(new PartEvent(PartEvent.IDLE));
 		}
-		
-		public function photoResultHandler(e:Event):void
-		{
-			trace("results");
-		}
 	]]>
 </mx:Script>
-
-   <mx:HTTPService 
-        id="photoService"
-        url="http://api.flickr.com/services/feeds/photos_public.gne" 
-        resultFormat="e4x"
-        result="photoResultHandler(event);"
-    />
 
 	<mx:DataGrid id="inbox" doubleClickEnabled="true" x="0" y="0" width="100%" height="100%">
 		<mx:columns>

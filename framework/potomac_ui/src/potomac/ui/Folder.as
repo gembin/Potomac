@@ -41,7 +41,7 @@ package potomac.ui
 		 */
 		public function get id():String
 		{
-			return id;
+			return _id;
 		}
 		
 		public function set id(id:String):void

@@ -8,11 +8,12 @@ package potomac.derived {
       [Embed(source="appCargo.xml", mimeType="application/octet-stream")]
       private var appCargoData:Class;
       private var templateID:String = "potomac_dark";
+      private var airBundlesURL:String = "";
+      private var airDisableCaching:Boolean = false;
       [Embed(source="C:/Users/cgross/potomac/examples/PotomacMailExample/src/logo1.png")]
       private var templateProp_logo:Class;
       private var templateData:Object = {logo:new templateProp_logo()};
       private var extAssets:ExtensionAssets;
-      private var styleReferences:StyleReferences;
       private var enablesForFlags:Array = [];
       public function PotomacInitializer(){
          Application.application.addEventListener(FlexEvent.APPLICATION_COMPLETE,go);
@@ -20,7 +21,7 @@ package potomac.derived {
       public function go(e:Event):void {
          var bytes:ByteArray = new appCargoData() as ByteArray;
          var appCargo:XML = new XML(bytes.readUTFBytes(bytes.length));
-         Launcher.launch(appCargo,templateID,templateData,enablesForFlags);
+         Launcher.launch(appCargo,templateID,templateData,enablesForFlags,airBundlesURL,airDisableCaching);
       }
    }
 }
