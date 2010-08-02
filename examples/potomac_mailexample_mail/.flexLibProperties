@@ -1,16 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<flexLibProperties version="1">
-<includeClasses>
-<classEntry path="FakeService"/>
-<classEntry path="MailDAO"/>
-<classEntry path="SendReceiveAction"/>
-<classEntry path="TaskList"/>
-<classEntry path="DayAtGlance"/>
-<classEntry path="About"/>
-<classEntry path="MailItem"/>
-<classEntry path="InboxList"/>
-<classEntry path="NewMailAction"/>
-</includeClasses>
-<includeResources/>
-<namespaceManifests/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="false" version="1">
+  <includeClasses>
+    <classEntry path="About"/>
+    <classEntry path="DayAtGlance"/>
+    <classEntry path="FakeService"/>
+    <classEntry path="InboxList"/>
+    <classEntry path="MailDAO"/>
+    <classEntry path="MailItem"/>
+    <classEntry path="NewMailAction"/>
+    <classEntry path="SendReceiveAction"/>
+    <classEntry path="TaskList"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests/>
 </flexLibProperties>

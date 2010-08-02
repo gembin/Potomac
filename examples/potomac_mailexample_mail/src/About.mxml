@@ -7,7 +7,7 @@
 	<mx:TextArea x="0" y="0" width="100%" height="100%" wordWrap="true" editable="false">
 		<mx:text><![CDATA[
 This is a quick demo to show the capabilities of Potomac.  All functionality is mocked up and fake.
-
+ 
 Some quick notes:
  -Double click on a mail item to show the mail tabs
  -Click New Mail to create a new mail item

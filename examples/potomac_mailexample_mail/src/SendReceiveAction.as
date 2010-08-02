@@ -12,7 +12,7 @@ package
 	{
 		private var _potomacUI:PotomacUI;
 		
-		[Inject]
+		[Inject]  
 		public function SendReceiveAction(potomacUI:PotomacUI)
 		{
 			super();
@@ -20,7 +20,7 @@ package
 		}
 		
 		override public function run():void
-		{
+		{ 
 			var page:Page = _potomacUI.findPage("mailpage");
 			_potomacUI.showPage(page);
 			var partRef:PartReference = page.getFolder("default").findPart("inboxlist");

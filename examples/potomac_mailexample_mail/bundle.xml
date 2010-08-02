@@ -1,37 +1,6 @@
-<bundle id='potomac_mailexample_mail' version='a' name='' activator=''>
+<bundle id='potomac_mailexample_mail' version='' name='' activator=''>
 <requiredBundles>
    <bundle>potomac_core</bundle>
    <bundle>potomac_ui</bundle>
 </requiredBundles>
-<extensionPoints>
-</extensionPoints>
-<extensions>
-   <extension point='Part' class='About' id='about' folder='mail_sidebar' title='About the Example' order='100' page='mailpage' codeStart='138' codeEnd='237' bundle='potomac_mailexample_mail'/>
-   <extension point='Folder' class='DayAtGlance' id='mail_sidebar' relativeTo='default' percent='25' page='mailpage' location='right' folderType='accordion' codeStart='138' codeEnd='262' bundle='potomac_mailexample_mail'/>
-   <extension point='Part' class='DayAtGlance' id='dayglance' folder='mail_sidebar' title='Todays Meetings' order='300' page='mailpage' codeStart='266' codeEnd='369' bundle='potomac_mailexample_mail'/>
-   <extension point='Page' class='InboxList' id='mailpage' icon='mail.png' title='Mail' order='10' codeStart='136' codeEnd='197' bundle='potomac_mailexample_mail'/>
-   <extension point='Folder' class='InboxList' id='default' relativeTo='n/a' percent='100' page='mailpage' location='top' folderType='naked' codeStart='200' codeEnd='308' bundle='potomac_mailexample_mail'/>
-   <extension point='Part' class='InboxList' id='inboxlist' folder='default' title='Inbox' page='mailpage' codeStart='311' codeEnd='380' bundle='potomac_mailexample_mail'/>
-   <extension point='Handles' class='InboxList' functionSignature='(e:flash.events.Event):void' source='_fakeService' event='fakeComplete' codeStart='1946' codeEnd='1999' function='onFakeServiceComplete' bundle='potomac_mailexample_mail'/>
-   <extension point='Handles' class='InboxList' functionSignature='(e:potomac.ui.PotomacEvent):void' source='_potomacUI' event='potomacPartClosed' codeStart='1465' codeEnd='1521' function='partClosed' bundle='potomac_mailexample_mail'/>
-   <extension point='Inject' class='InboxList' variableType='MailDAO' variable='_mailDAO' codeStart='721' codeEnd='740' bundle='potomac_mailexample_mail'/>
-   <extension point='Handles' class='InboxList' functionSignature='(e:mx.events.ListEvent):void' source='inbox' event='itemDoubleClick' codeStart='1106' codeEnd='1155' function='openItem' bundle='potomac_mailexample_mail'/>
-   <extension point='Inject' class='InboxList' variableType='potomac.ui.PotomacUI' variable='_potomacUI' codeStart='769' codeEnd='790' bundle='potomac_mailexample_mail'/>
-   <extension point='Handles' class='InboxList' functionSignature='(e:potomac.ui.PartEvent):void' event='partInitialize' codeStart='873' codeEnd='906' function='onPartInit' bundle='potomac_mailexample_mail'/>
-   <extension point='Handles' class='InboxList' functionSignature='(e:flash.events.Event):void' event='sendreceive' codeStart='1769' codeEnd='1799' function='onSendReceive' bundle='potomac_mailexample_mail'/>
-   <extension point='Injectable' class='MailDAO' singleton='true' codeStart='13' codeEnd='43' bundle='potomac_mailexample_mail'/>
-   <extension point='Folder' class='MailItem' relativeTo='default' id='mail' open='false' percent='50' location='bottom' page='mailpage' folderType='closeableTabs' codeStart='138' codeEnd='283' bundle='potomac_mailexample_mail'/>
-   <extension point='Part' class='MailItem' id='mailitem' title='Mail Item' codeStart='287' codeEnd='326' bundle='potomac_mailexample_mail'/>
-   <extension point='Inject' class='MailItem' variableType='MailDAO' variable='_mailDAO' codeStart='517' codeEnd='536' bundle='potomac_mailexample_mail'/>
-   <extension point='Handles' class='MailItem' functionSignature='(e:potomac.ui.PartEvent):void' event='partInitialize' codeStart='598' codeEnd='631' function='onPartInit' bundle='potomac_mailexample_mail'/>
-   <extension point='Handles' class='MailItem' functionSignature='(e:potomac.ui.PartEvent):void' event='partDoSave' codeStart='1338' codeEnd='1367' function='onDoSave' bundle='potomac_mailexample_mail'/>
-   <extension point='Handles' class='MailItem' functionSignature='(e:flash.events.Event):void' source='from' event='change' codeStart='1087' codeEnd='1126' function='onTextChange' bundle='potomac_mailexample_mail'/>
-   <extension point='Handles' class='MailItem' functionSignature='(e:flash.events.Event):void' source='subject' event='change' codeStart='1131' codeEnd='1173' function='onTextChange' bundle='potomac_mailexample_mail'/>
-   <extension point='Handles' class='MailItem' functionSignature='(e:flash.events.Event):void' source='text' event='change' codeStart='1178' codeEnd='1217' function='onTextChange' bundle='potomac_mailexample_mail'/>
-   <extension point='Action' class='NewMailAction' icon='newmail.png' label='New Mail' codeStart='159' codeEnd='204' bundle='potomac_mailexample_mail'/>
-   <extension point='Inject' class='NewMailAction' functionSignature='(potomacUI:potomac.ui.PotomacUI):NewMailAction' codeStart='308' codeEnd='347' function='NewMailAction' bundle='potomac_mailexample_mail'/>
-   <extension point='Action' class='SendReceiveAction' label='Send/Receive' codeStart='167' codeEnd='197' bundle='potomac_mailexample_mail'/>
-   <extension point='Inject' class='SendReceiveAction' functionSignature='(potomacUI:potomac.ui.PotomacUI):SendReceiveAction' codeStart='307' codeEnd='350' function='SendReceiveAction' bundle='potomac_mailexample_mail'/>
-   <extension point='Part' class='TaskList' id='tasklist' folder='mail_sidebar' title='My Tasks' order='200' page='mailpage' codeStart='138' codeEnd='236' bundle='potomac_mailexample_mail'/>
-</extensions>
 </bundle>
