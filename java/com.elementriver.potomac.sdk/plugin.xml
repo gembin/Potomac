@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         id="potomacAppBuilder"
+         name="Potomac Application Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder
+            hasNature="true">
+         <run
+               class="com.elementriver.potomac.sdk.app.PotomacAppBuilder">
+         </run>
+      </builder>
+   </extension>
+      <extension
+         id="potomacBundleBuilder"
+         name="Potomac Bundle Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder
+            hasNature="true">
+         <run
+               class="com.elementriver.potomac.sdk.bundles.PotomacBundleBuilder">
+         </run>
+      </builder>
+   </extension>
+   <extension
+         id="potomacAppNature"
+         name="Potomac Application Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="com.elementriver.potomac.sdk.app.PotomacAppNature">
+         </run>
+      </runtime>
+      <builder
+            id="com.elementriver.potomac.sdk.potomacAppBuilder">
+      </builder>
+   </extension>
+   <extension
+         id="potomacBundleNature"
+         name="Potomac Bundle Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="com.elementriver.potomac.sdk.bundles.PotomacBundleNature">
+         </run>
+      </runtime>
+      <builder
+            id="com.elementriver.potomac.sdk.potomacBundleBuilder">
+      </builder>
+   </extension>   
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="true"
+            objectClass="org.eclipse.core.resources.IProject"
+            nameFilter="*"
+            id="com.elementriver.potomac.sdk.contribution1">
+            
+            <filter name="projectNature" value="com.elementriver.potomac.sdk.potomacBundleNature" /> 
+            
+            
+         <action
+               label="Remove Potomac Bundle Nature"
+               class="com.elementriver.potomac.sdk.bundles.RemoveBundleNatureAction"
+               menubarPath="additions"
+               enablesFor="+"
+               id="com.elementriver.potomac.sdk.addRemoveNatureAction">
+         </action>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="com.elementriver.potomac.sdk.objectContribution2"
+            nameFilter="*"
+            objectClass="org.eclipse.core.resources.IProject">
+         <filter
+               name="projectNature"
+               value="com.adobe.flexbuilder.project.flexlibnature">
+         </filter>
+         <action
+               class="com.elementriver.potomac.sdk.bundles.AddBundleNatureAction"
+               enablesFor="+"
+               id="com.elementriver.potomac.sdk.addPotomacNatureAction"
+               label="Add Potomac Bundle Nature"
+               menubarPath="additions">
+         </action>
+         <visibility>
+            <and>
+               <not>
+                  <objectState
+                        name="projectNature"
+                        value="com.elementriver.potomac.sdk.potomacBundleNature">
+                  </objectState>
+               </not>
+               <objectState
+                     name="projectNature"
+                     value="com.adobe.flexbuilder.project.flexlibnature">
+               </objectState>
+            </and>
+         </visibility>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="com.elementriver.potomac.sdk.contribution3"
+            nameFilter="*"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="com.elementriver.potomac.sdk.app.RemoveAppNatureAction"
+               enablesFor="+"
+               id="com.elementriver.potomac.sdk.addRemoveNatureAction"
+               label="Remove Potomac Application Nature"
+               menubarPath="additions">
+         </action>
+         <filter
+               name="projectNature"
+               value="com.elementriver.potomac.sdk.potomacAppNature">
+         </filter>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="com.elementriver.potomac.sdk.objectContribution4"
+            nameFilter="*"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="com.elementriver.potomac.sdk.app.AddAppNatureAction"
+               enablesFor="+"
+               id="com.elementriver.potomac.sdk.addAppNatureAction"
+               label="Add Potomac Application Nature"
+               menubarPath="additions">
+         </action>
+         <filter
+               name="projectNature"
+               value="com.adobe.flexbuilder.project.flexnature">
+         </filter>
+         <visibility>
+            <and>
+               <not>
+                  <objectState
+                        name="projectNature"
+                        value="com.elementriver.potomac.sdk.potomacAppNature">
+                  </objectState>
+               </not>
+               <objectState
+                     name="projectNature"
+                     value="com.adobe.flexbuilder.project.flexnature">
+               </objectState>
+            </and>
+         </visibility>
+      </objectContribution>
+   </extension>
+   <extension
+         id="potomacProblem"
+         name="Potomac Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.elementriver.potomac.sdk.bundles.BundleXMLEditor"
+            default="true"
+            filenames="bundle.xml"
+            icon="icons/bundle.gif"
+            id="com.elementriver.potomac.sdk.editor.BundleXMLEditor"
+            name="Bundle Manifest Editor">
+      </editor>
+      <editor
+            class="com.elementriver.potomac.sdk.app.AppManifestEditor"
+            default="true"
+            filenames="appManifest.xml"
+            icon="icons/bundle.gif"
+            id="com.elementriver.potomac.sdk.AppManifestEditor"
+            name="Application Manifest Editor">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="com.elementriver.potomac.sdk.PrefPage"
+            id="com.elementriver.potomac.sdk.PrefPage"
+            name="Potomac">
+      </page>
+      <page
+            category="com.elementriver.potomac.sdk.PrefPage"
+            class="com.elementriver.potomac.sdk.IgnoredMetadataPrefPage"
+            id="com.elementriver.potomac.sdk.unknownMetadata"
+            name="Ignored Metadata">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.elementriver.potomac.sdk.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         id="potomacProblem2"
+         name="Potomac Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         point="com.elementriver.sourcemate.metadataProvider">
+      <provider
+            class="com.elementriver.potomac.sdk.SourceMateMetadataProvider">
+      </provider>
+   </extension>
+</plugin>
