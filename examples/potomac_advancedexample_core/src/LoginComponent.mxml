@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 width="400" height="250">
+
+	<fx:Script>
+		<![CDATA[
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				if (userid.text.length == 0)
+				{
+					errormsg.setStyle("color",0xFF0000); 
+					errormsg.text = "Please enter User ID.";
+					errormsg.visible = true;
+					return;
+				}
+				if (password.text.length == 0)
+				{
+					errormsg.setStyle("color",0xFF0000);
+					errormsg.text = "Please enter Password.";
+					errormsg.visible = true;
+					return;
+				}
+				
+				errormsg.text = "Loading user specific bundles...";
+				errormsg.visible = true;
+				errormsg.setStyle("color",0x0000FF);
+				dispatchEvent(new Event(Event.COMPLETE));
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Rect width="100%" height="100%">
+		<s:fill><s:SolidColor color="0xFFFFFF" /></s:fill>
+	</s:Rect>
+	<s:TextInput x="130" y="107" id="userid" width="219"/>
+	<s:TextInput x="130" y="148" width="219" id="password" displayAsPassword="true"/>
+	<s:Label x="52" y="118" text="User ID:"/>
+	<s:Label x="52" y="154" text="Password:"/>
+	<s:Label x="30" y="34" text="Please enter your User ID and Password to login." fontFamily="Arial" fontSize="18" width="319" height="47"/>
+	<s:Button x="279" y="207" label="Login" click="button1_clickHandler(event)"/>
+	<s:Label x="53" y="212" text="You can enter any userid/password." width="208" id="errormsg"/>
+</s:Group>

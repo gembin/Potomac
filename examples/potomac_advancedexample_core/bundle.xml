@@ -1,0 +1,5 @@
+<bundle id='potomac_advancedexample_core' version='' name='' activator=''>
+<requiredBundles>
+   <bundle>potomac_core</bundle>
+</requiredBundles>
+</bundle>
