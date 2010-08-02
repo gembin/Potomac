@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>PotomacAdvancedExample</name>
+	<comment></comment>
+	<projects>
+		<project>potomac_core</project>
+		<project>potomac_ui</project>
+		<project>potomac_ui_templates_dark</project>
+		<project>potomac_advancedexample_core</project>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>com.adobe.flexbuilder.project.flexbuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>com.elementriver.potomac.sdk.potomacAppBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>com.elementriver.sourcemate.sourceMateBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>com.adobe.flexbuilder.project.flexnature</nature>
+		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
+		<nature>com.elementriver.potomac.sdk.potomacAppNature</nature>
+	</natures>
+</projectDescription>

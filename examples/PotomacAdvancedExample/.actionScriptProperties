@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<actionScriptProperties mainApplicationPath="PotomacAdvancedExample.mxml" projectUUID="8aa63307-2ab0-4f6e-aac4-834cab065af4" version="6">
+  <compiler additionalCompilerArguments="-locale en_US -default-background-color=0x0033FF -keep-all-type-selectors=true" autoRSLOrdering="true" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="true" htmlExpressInstall="true" htmlGenerate="true" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
+    <compilerSourcePath/>
+    <libraryPath defaultLinkType="3">
+      <libraryPathEntry kind="4" path="">
+        <modifiedEntries>
+          <libraryPathEntry autoExtract="true" index="6" kind="3" linkType="3" path="${PROJECT_FRAMEWORKS}/libs/rpc.swc" rslUrl="rpc.swf" useDefaultLinkType="true"/>
+        </modifiedEntries>
+        <excludedEntries>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/flex.swc" useDefaultLinkType="false"/>
+        </excludedEntries>
+      </libraryPathEntry>
+      <libraryPathEntry kind="1" linkType="1" path="libs"/>
+      <libraryPathEntry autoExtract="true" kind="3" linkType="3" path="/potomac_core/bin/potomac_core.swc" rslUrl="potomac_core.swf" useDefaultLinkType="false"/>
+    </libraryPath>
+    <sourceAttachmentPath/>
+  </compiler>
+  <applications>
+    <application path="PotomacAdvancedExample.mxml"/>
+  </applications>
+  <modules/>
+  <buildCSSFiles/>
+</actionScriptProperties>
