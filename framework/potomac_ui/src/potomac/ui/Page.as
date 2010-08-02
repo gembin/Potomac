@@ -17,6 +17,13 @@ package potomac.ui
 	[ExtensionPoint(id="Page",declaredOn="classes",title="*string",
 	                idRequired="true",icon="asset:png,gif,jpg",
 	                pageType="string",order="integer",open="boolean")]
+	[ExtensionPointDetails(id="Page",description="Declares a new Potomac page")]
+	[ExtensionPointDetails(id="Page",attribute="title",description="The page's title",order="1")]
+	[ExtensionPointDetails(id="Page",attribute="icon",description="The page's image",order="2")]
+	[ExtensionPointDetails(id="Page",attribute="order",description="An integer that determines the page's order",order="3")]
+	[ExtensionPointDetails(id="Page",attribute="open",description="If false, the page will not be automatically opened/created",order="4",common="false")]
+	[ExtensionPointDetails(id="Page",attribute="pageType",description="PageType extension that managed the page's UI presentation",order="5",common="false")]
+	
 	/**
 	 * A page is a high-level subsection of an application.  Pages display 
 	 * UI through one or more Folders.  Each page has one default Folder (with the id of "default")
@@ -126,7 +133,7 @@ package potomac.ui
 		 * @return the new folder 
 		 * 
 		 */
-		public function openFolder(id:String,folderType:String=null,options:FolderOptions=null,location:String=null,relativeTo:String=null,percent:int=0):Folder
+		public function openFolder(folderID:String,folderType:String=null,options:FolderOptions=null,location:String=null,relativeTo:String=null,percent:int=0):Folder
 		{
 			return null;
 		}
@@ -138,7 +145,7 @@ package potomac.ui
 		 * @return a folder instance or null.
 		 * 
 		 */
-		public function getFolder(id:String):Folder
+		public function getFolder(folderID:String):Folder
 		{
 			return null;
 		}
@@ -171,7 +178,7 @@ package potomac.ui
 		 * @param id id of the folder to close.
 		 * 
 		 */
-		public function closeFolderByID(id:String):void
+		public function closeFolderByID(folderID:String):void
 		{
 			
 		}

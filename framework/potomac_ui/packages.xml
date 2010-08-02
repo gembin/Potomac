@@ -1,0 +1,16 @@
+<overviews> 
+    <packages> 
+        <package name="potomac.ui"> 
+            <shortDescription> 
+                <![CDATA[ 
+                    ui short
+                ]]> 
+            </shortDescription> 
+            <description> 
+                <![CDATA[ 
+                    ui longie. 
+                ]]> 
+            </description> 
+        </package> 
+    </packages> 
+</overviews>

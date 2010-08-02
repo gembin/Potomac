@@ -14,9 +14,22 @@ package potomac.ui
 	import potomac.bundle.IBundleService;
 	import potomac.inject.Injector;
 	
-	[ExtensionPoint(id="Part",idRequired="true",type="mx.core.Container",declaredOn="classes",
+	[ExtensionPoint(id="Part",idRequired="true",type="mx.core.UIComponent",declaredOn="classes",
 					title="*string",icon="asset:png,jpg,gif",folder="string",page="string",order="integer")]
-	[ExtensionPoint(id="PartInstance",declaredOn="classes",partID="*string",page="*string",folder="*string",order="integer")]	
+	[ExtensionPointDetails(id="Part",description="Declares a new Potomac part")]
+	[ExtensionPointDetails(id="Part",attribute="title",description="The part's title",order="1")]
+	[ExtensionPointDetails(id="Part",attribute="icon",description="The part's image",order="2")]
+	[ExtensionPointDetails(id="Part",attribute="page",description="The page to place the part on",order="3")]
+	[ExtensionPointDetails(id="Part",attribute="folder",description="The folder to place the part in",order="4")]
+	[ExtensionPointDetails(id="Part",attribute="order",description="The relative order of this part among all parts in the parent folder",order="5")]
+	
+	[ExtensionPoint(id="PartInstance",declaredOn="classes",partID="*string",page="*string",folder="*string",order="integer")]
+	[ExtensionPointDetails(id="PartInstance",description="Declares a new instance of a Potomac part")]
+	[ExtensionPointDetails(id="PartInstance",attribute="partID",description="The id of the part to create",order="1")]
+	[ExtensionPointDetails(id="PartInstance",attribute="page",description="The page to place the part on",order="2")]
+	[ExtensionPointDetails(id="PartInstance",attribute="folder",description="The folder to place the part in",order="3")]
+	[ExtensionPointDetails(id="PartInstance",attribute="order",description="The relative order of this part among other parts in the parent folder",order="4")]
+	
 	[Injectable(singleton="true")]
 	/**
 	 * PartExtensionManager helps Page instances gather part extensions for creation.

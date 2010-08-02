@@ -10,7 +10,7 @@
  *******************************************************************************/
 package potomac.ui
 {
-	import mx.core.Container;
+	import mx.core.UIComponent;
 	
 	/**
 	 * A reference to a part in a folder.  The part may or may not be created and its bundle may not yet be loaded.  Potomac will attempt to 
@@ -22,14 +22,13 @@ package potomac.ui
 	{
 		private var _id:String;
 		private var _input:PartInput;
-		private var _control:Container;
+		private var _control:UIComponent;
 		
-		//warn that public shouldnt create these
 		/**
 		 * Callers should not construct PartReference instances.  PartReferences should be 
 		 * retreived via Folders.
 		 */
-		public function PartReference(id:String,input:PartInput,control:Container)
+		public function PartReference(id:String,input:PartInput,control:UIComponent)
 		{
 			_id = id;
 			_input = input;
@@ -55,12 +54,12 @@ package potomac.ui
 		/**
 		 * The part's control or null if the part is not yet created.
 		 */
-		public function get control():Container
+		public function get control():UIComponent
 		{
 			return _control;
 		}
 		
-		public function set control(control:Container):void
+		public function set control(control:UIComponent):void
 		{
 			_control = control;
 		}

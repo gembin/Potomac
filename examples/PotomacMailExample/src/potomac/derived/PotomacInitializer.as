@@ -1,27 +1,37 @@
 package potomac.derived {
    import flash.events.Event;
-   import flash.utils.ByteArray;
-   import mx.core.Application;
+   import mx.core.FlexGlobals;
    import mx.events.FlexEvent;
-   import potomac.ui.restricted.Launcher;
+   import potomac.core.Launcher;
+   import potomac.core.LauncherManifest;
+   import potomac.core.TemplateRunner;
    public class PotomacInitializer {
-      [Embed(source="appCargo.xml", mimeType="application/octet-stream")]
-      private var appCargoData:Class;
+      private var bundles:Array = ["potomac_core","potomac_ui","potomac_ui_templates_dark","potomac_mailexample_mail","potomac_mailexample_rss"];
+      private var preloads:Array = ["potomac_core","potomac_ui","potomac_ui_templates_dark"];
       private var templateID:String = "potomac_dark";
       private var airBundlesURL:String = "";
       private var airDisableCaching:Boolean = false;
-      [Embed(source="C:/Users/cgross/potomac/examples/PotomacMailExample/src/logo1.png")]
+      [Embed(source="C:/Users/cgross/workspaceFB4_Final/Potomac/examples/PotomacMailExample/src/logo1.png")]
       private var templateProp_logo:Class;
       private var templateData:Object = {logo:new templateProp_logo()};
-      private var extAssets:ExtensionAssets;
       private var enablesForFlags:Array = [];
       public function PotomacInitializer(){
-         Application.application.addEventListener(FlexEvent.APPLICATION_COMPLETE,go);
+         FlexGlobals.topLevelApplication.addEventListener(FlexEvent.APPLICATION_COMPLETE,go);
+         FlexGlobals.topLevelApplication.addEventListener(FlexEvent.INITIALIZE,init);
+      }
+      public function init(e:Event):void {
+         Launcher.findPreloader();
       }
       public function go(e:Event):void {
-         var bytes:ByteArray = new appCargoData() as ByteArray;
-         var appCargo:XML = new XML(bytes.readUTFBytes(bytes.length));
-         Launcher.launch(appCargo,templateID,templateData,enablesForFlags,airBundlesURL,airDisableCaching);
+         var runner:TemplateRunner = new TemplateRunner(templateID,templateData);
+         var manifest:LauncherManifest = new LauncherManifest();
+         manifest.bundles = bundles;
+         manifest.preloads = preloads;
+         manifest.airBundlesURL = airBundlesURL;
+         manifest.disableAIRCaching = airDisableCaching;
+         manifest.enablesForFlags = enablesForFlags;
+         manifest.runner = runner;
+         Launcher.launch(manifest);
       }
    }
 }

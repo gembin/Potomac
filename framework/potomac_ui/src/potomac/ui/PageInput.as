@@ -20,14 +20,13 @@ package potomac.ui
 	 * information as possible to allow the model to be retrieved.  This typically means the input
 	 * should contain primary key information only.  Inputs will be serialized and stored between
 	 * application sessions.  They will be deserialized and recreated in order to the user to shown
-	 * the same pages that were shown during his last application session.
+	 * the same pages that were shown during his last application session.</p>
 	 * <p>
 	 * PageInput is a dynamic object.  Developers are encouraged to write their own subclasses of 
 	 * PageInput but it isn't required.  Dynamic properties can be attached to a PageInput.  Integer and String
 	 * dynamic properties will be automatically serialized and checked during #equals.  Subclasses must 
 	 * re-implement #equals().
-	 * 
-	 * @author cgross
+	 * </p>
 	 */
 	public dynamic class PageInput
 	{

@@ -12,6 +12,10 @@ package potomac.ui
 {
 	[ExtensionPoint(id="Action",type="potomac.ui.Action",declaredOn="classes",
 					label="*string",icon="asset:png,gif,jpg")]
+	[ExtensionPointDetails(id="Action",description="Declares a global Potomac action")]
+	[ExtensionPointDetails(id="Action",attribute="label",description="Action's text label",order="1")]
+	[ExtensionPointDetails(id="Action",attribute="icon",description="Action's image decorator",order="2")]
+	
 	/**
 	 * An Action represents a runnable piece of logic that is typically represented on the 
 	 * UI.

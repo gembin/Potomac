@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
-	 layout="absolute" xmlns:derived="potomac.derived.*"
-	 pageTitle="Potomac Mail Example" 
-	 historyManagementEnabled="false" >
-	<derived:PotomacInitializer>
-		
-	</derived:PotomacInitializer>
-</mx:Application>

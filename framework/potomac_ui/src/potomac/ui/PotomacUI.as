@@ -15,14 +15,17 @@ package potomac.ui
 	import flash.utils.Dictionary;
 	
 	import mx.controls.Alert;
-	import mx.core.Container;
+	import mx.core.UIComponent;
 	import mx.events.CloseEvent;
 	
 	import potomac.bundle.Extension;
 	import potomac.bundle.IBundleService;
 	
 	[ExtensionPoint(id="Template",declaredOn="classes",idRequired="true",
-					rslRequired="true",type="mx.core.Container",properties="string")]
+					preloadRequired="true",type="mx.core.UIComponent",properties="string")]
+	[ExtensionPointDetails(id="Template",description="Declares a new top-level Potomac UI template")]
+	[ExtensionPointDetails(id="Template",attribute="properties",description="A comma-separated string of custom template properties (ex 'logo:image,title:string').  Valid datatypes include image, string, and boolean",order="1")]
+	
 	[Injectable(singleton="true")]
 	/**
 	 * PotomaUI is the main controller for the Potomac UI framework.  Its primarily responsible for
@@ -39,7 +42,7 @@ package potomac.ui
 		//map of pages to Objects with those Obj having props like saving and closing
 		private var _pageVars:Object = new Dictionary();
 		
-		private var _template:Container;
+		private var _template:UIComponent;
 		
 		[Inject]
 		/**
@@ -87,7 +90,7 @@ package potomac.ui
 		/**
 		 * @private
 		 */
-		public function initializeTemplate(template:Container,templateData:Object):void
+		public function initializeTemplate(template:UIComponent,templateData:Object):void
 		{
 			_template = template;
 			template.dispatchEvent(new TemplateEvent(TemplateEvent.INITIALIZE,templateData,null,null,null,null,false));

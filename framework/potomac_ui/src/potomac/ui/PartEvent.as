@@ -12,7 +12,7 @@ package potomac.ui
 {
 	import flash.events.Event;
 	
-	import mx.core.Container;
+	import mx.core.UIComponent;
 
 	/**
 	 * PartEvents are the main mechanism of communication between Parts and the Potomac User Interface.  Some 
@@ -20,6 +20,7 @@ package potomac.ui
 	 * are dispatched on the parts themselves.  
 	 * <p>
 	 * Part developers may construct PartEvent instances or use one of the convenient static send* methods.
+	 * </p>
 	 */
 	public class PartEvent extends Event
 	{
@@ -30,7 +31,7 @@ package potomac.ui
 		* <p>
 		* Initialize events are dispatched on parts to give them a chance to 
 		* inspect their input and retrieve data.
-		*
+		* </p>
 		*  <p>The properties of the event object have the following values:</p>
 	 	*  <table class="innertable">
 		*     <tr><th>Property</th><th>Value</th></tr>
@@ -59,7 +60,7 @@ package potomac.ui
 		 * <p>
 		 * Dirty events are dispatched by parts to tell Potomac that the part
 		 * has unsaved changes.
-		*
+		* </p>
 		*  <p>The properties of the event object have the following values:</p>
 	 	*  <table class="innertable">
 		*     <tr><th>Property</th><th>Value</th></tr>
@@ -88,7 +89,7 @@ package potomac.ui
 		 * <p>
 		 * Clean events are dispatched by parts to tell Potomac that the part no longer
 		 * has unsaved changes.
-		*
+		* </p>
 		*  <p>The properties of the event object have the following values:</p>
 	 	*  <table class="innertable">
 		*     <tr><th>Property</th><th>Value</th></tr>
@@ -118,7 +119,7 @@ package potomac.ui
 		 * Busy events are dispatched by parts to tell Potomac that the part is performing a long running activity,
 		 * typically awaiting the results of a service call.  Potomac will disable the part and show an animation.  
 		 * Parts can affect the text shown during this animation with the busyText property.
-		*
+		* </p>
 		*  <p>The properties of the event object have the following values:</p>
 	 	*  <table class="innertable">
 		*     <tr><th>Property</th><th>Value</th></tr>
@@ -148,7 +149,7 @@ package potomac.ui
 		 * Idle events are dispatched by parts to tell Potomac that the part is no longer
 		 * performing a long running activity.  If the part was busy, the busy animation 
 		 * will be stopped and the part will be re-enabled.
-		*
+		* </p> 
 		*  <p>The properties of the event object have the following values:</p>
 	 	*  <table class="innertable">
 		*     <tr><th>Property</th><th>Value</th></tr>
@@ -178,7 +179,7 @@ package potomac.ui
 		 * Selection changed events are dispatched by parts to inform Potomac that the
 		 * selection in this part has changed.  Potomac will in turn dispatch a SelectionEvent.SELECTION_CHANGED 
 		 * event to all parts.
-		*
+		* </p>
 		*  <p>The properties of the event object have the following values:</p>
 	 	*  <table class="innertable">
 		*     <tr><th>Property</th><th>Value</th></tr>
@@ -207,7 +208,7 @@ package potomac.ui
 		 * <p>
 		 * A broadcast event is a mechanism by which parts can have an event dispatched on 
 		 * all currently open parts.  This is a useful inter-part communication mechanism.
-		*
+		* </p>
 		*  <p>The properties of the event object have the following values:</p>
 	 	*  <table class="innertable">
 		*     <tr><th>Property</th><th>Value</th></tr>
@@ -238,7 +239,7 @@ package potomac.ui
 		 * Do Save events are dispatched by Potomac to parts when the user has requested the 
 		 * part's data be saved.  Parts are expected to initiate (asynchronous) save logic and send back a 
 		 * PartEvent.SAVE_COMPLETE or PartEvent.SAVE_ERROR event.
-		 * 
+		 * </p>
 		*  <p>The properties of the event object have the following values:</p>
 	 	*  <table class="innertable">
 		*     <tr><th>Property</th><th>Value</th></tr>
@@ -267,7 +268,7 @@ package potomac.ui
 		*<p>
 		 * Save complete events are dispatched by parts to inform Potomac that an
 		 * asynchronous save was successful.  
-		 * 
+		 * </p>
 		*  <p>The properties of the event object have the following values:</p>
 	 	*  <table class="innertable">
 		*     <tr><th>Property</th><th>Value</th></tr>
@@ -297,7 +298,7 @@ package potomac.ui
 		 * Save error events are dispatched by parts to Potomac when asynchronous 
 		 * save logic failed.  Parts are expected to show the necessary UI to communicate
 		 * the error to the user.  
-		 * 
+		 * </p>
 		*  <p>The properties of the event object have the following values:</p>
 	 	*  <table class="innertable">
 		*     <tr><th>Property</th><th>Value</th></tr>
@@ -366,7 +367,7 @@ package potomac.ui
 		 * @param busyText text to show in busy animation.
 		 * 
 		 */
-		public static function sendBusy(part:Container,busyText:String):void
+		public static function sendBusy(part:UIComponent,busyText:String):void
 		{
 			var e:PartEvent = new PartEvent(BUSY);
 			e.busyText = busyText;
@@ -380,7 +381,7 @@ package potomac.ui
 		 * @param part part to mark idle.
 		 * 
 		 */
-		public static function sendIdle(part:Container):void
+		public static function sendIdle(part:UIComponent):void
 		{
 			part.dispatchEvent(new PartEvent(IDLE));
 		}
@@ -392,7 +393,7 @@ package potomac.ui
 		 * @param eventToBroadcast event to broadcast to all parts.
 		 * 
 		 */
-		public static function sendBroadcast(part:Container,eventToBroadcast:Event):void
+		public static function sendBroadcast(part:UIComponent,eventToBroadcast:Event):void
 		{
 			var e:PartEvent = new PartEvent(BROADCAST_TO_PARTS);
 			e.eventToBroadcast = eventToBroadcast;
@@ -405,7 +406,7 @@ package potomac.ui
 		 * @param part part to mark dirty.
 		 * 
 		 */
-		public static function sendDirty(part:Container):void
+		public static function sendDirty(part:UIComponent):void
 		{
 			part.dispatchEvent(new PartEvent(DIRTY));
 		}
@@ -416,7 +417,7 @@ package potomac.ui
 		 * @param part part to mark clean.
 		 * 
 		 */
-		public static function sendClean(part:Container):void
+		public static function sendClean(part:UIComponent):void
 		{
 			part.dispatchEvent(new PartEvent(CLEAN));
 		}
@@ -429,7 +430,7 @@ package potomac.ui
 		 * @param newSelection the new selection.
 		 * 
 		 */
-		public static function sendSelectionChanged(part:Container,newSelection:Array):void
+		public static function sendSelectionChanged(part:UIComponent,newSelection:Array):void
 		{
 			part.dispatchEvent(new PartEvent(SELECTION_CHANGED,newSelection));
 		}
@@ -440,7 +441,7 @@ package potomac.ui
 		 * @param part part which saved successfully.
 		 * 
 		 */
-		public static function sendSaveComplete(part:Container):void
+		public static function sendSaveComplete(part:UIComponent):void
 		{
 			part.dispatchEvent(new PartEvent(SAVE_COMPLETE));
 		}
@@ -452,7 +453,7 @@ package potomac.ui
 		 * @param part part for which the save failed.
 		 * 
 		 */
-		public static function sendSaveError(part:Container):void
+		public static function sendSaveError(part:UIComponent):void
 		{
 			part.dispatchEvent(new PartEvent(SAVE_ERROR));
 		}

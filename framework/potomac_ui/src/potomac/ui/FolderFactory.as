@@ -18,7 +18,9 @@ package potomac.ui
 	import potomac.inject.Injector;
 	
 	
-	[ExtensionPoint(id="FolderType",type="potomac.ui.Folder",idRequired="true",rslRequired="true")]
+	[ExtensionPoint(id="FolderType",type="potomac.ui.Folder",idRequired="true",preloadRequired="true")]
+	[ExtensionPointDetails(id="FolderType",description="Declares a new Folder UI presentation")]
+	
 	[Injectable(singleton="true")]
 	/**
 	 * FolderFactory creates folders for Page instances. FolderFactory is available for injection.

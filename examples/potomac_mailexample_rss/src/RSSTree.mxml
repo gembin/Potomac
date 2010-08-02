@@ -6,7 +6,7 @@
 		[Page(id="twitter",title="Twitter",icon="twitter.png")]
 		[Part(id="rsstree",title="Feeds",page="rss",
 			folder="default",order="100")]
-	</mx:Metadata>
+	</mx:Metadata> 
 	
 	<mx:Script>
 		<![CDATA[

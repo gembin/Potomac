@@ -10,22 +10,14 @@
  *******************************************************************************/
 package potomac.ui.defaultUI
 {
-	import flash.events.Event;
-	
 	import mx.containers.Accordion;
 	import mx.core.Container;
 	import mx.events.IndexChangedEvent;
 	
-	import potomac.bundle.Extension;
-	import potomac.inject.InjectionEvent;
-	import potomac.inject.InjectionRequest;
+	import potomac.core.potomac;
 	import potomac.inject.Injector;
-	import potomac.ui.Folder;
 	import potomac.ui.FolderOptions;
-	import potomac.ui.PartEvent;
 	import potomac.ui.PartExtensionManager;
-	import potomac.ui.PartInput;
-	import potomac.ui.PartOptions;
 	import potomac.ui.PartReference;
 	import potomac.ui.PotomacUI;
 	import potomac.ui.SelectionService;
@@ -85,6 +77,7 @@ package potomac.ui.defaultUI
 		{
 			loadPart(event.relatedObject as BusyCanvas);
 		}
+
 		
 		/**
 		 * @inheritDoc

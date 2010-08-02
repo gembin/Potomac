@@ -18,6 +18,7 @@ package potomac.ui.defaultUI
 	import mx.events.CloseEvent;
 	
 	import potomac.bundle.Extension;
+	import potomac.core.potomac;
 	import potomac.inject.InjectionEvent;
 	import potomac.inject.InjectionRequest;
 	import potomac.inject.Injector;
@@ -222,12 +223,15 @@ package potomac.ui.defaultUI
 		
 		private function onIconLabelChange(e:Event):void
 		{
-			updateIconLabel(e.target as Container);
+			updateIconLabel(e.target as UIComponent);
 		}
 		
-		protected function updateIconLabel(part:Container):void
+		protected function updateIconLabel(part:UIComponent):void
 		{
 			var parent:BusyCanvas = part.parent as BusyCanvas;
+			var partAsContainer:Container;
+			if (part is Container)
+				partAsContainer = part as Container;
 			
 			var dirty:String = "";
 			if (parent.dirty == true)
@@ -237,14 +241,14 @@ package potomac.ui.defaultUI
 			var label:String = parent.partExtension.title;
 			if (parent.partReference.input != null && parent.partReference.input.title != null)
 				label = parent.partReference.input.title;
-			if (part.label != null && part.label != "")
-				label = part.label;
+			if (partAsContainer != null && partAsContainer.label != null && partAsContainer.label != "")
+				label = partAsContainer.label;
 			parent.label = dirty + label;
 			var icon:Class = parent.partExtension.icon;
 			if (parent.partReference.input != null && parent.partReference.input.icon != null)
 				icon = parent.partReference.input.icon;
-			if (part.icon != null)
-				icon = part.icon;
+			if (partAsContainer != null && partAsContainer.icon != null)
+				icon = partAsContainer.icon;
 
 			parent.icon = icon;					
 		}
@@ -289,10 +293,10 @@ package potomac.ui.defaultUI
 			e.target.parent.dirty = false;
 			onIconLabelChange(e);
 			_potomacUI.dispatchEvent(new PotomacEvent(PotomacEvent.PART_DIRTY_CHANGE,e.target.parent.partReference as PartReference,page));
-			finishSave(e.target as Container,true);
+			finishSave(e.target as UIComponent,true);
 		}
 		
-		private function finishSave(part:Container,sendEvent:Boolean):void
+		private function finishSave(part:UIComponent,sendEvent:Boolean):void
 		{			
 			var busyCanvas:BusyCanvas = BusyCanvas(part.parent);
 			busyCanvas.saving = false;
@@ -321,7 +325,7 @@ package potomac.ui.defaultUI
 			}		
 			e.target.parent.busy = false;
 			e.target.parent.saveError = true;	
-			updateIconLabel(e.target as Container);
+			updateIconLabel(e.target as UIComponent);
 		}
 		
 		/**
@@ -373,7 +377,7 @@ package potomac.ui.defaultUI
 			
 			if (busyCanvas.partReference.control != null)
 			{
-				var part:Container = busyCanvas.partReference.control;
+				var part:UIComponent = busyCanvas.partReference.control;
 				part.removeEventListener("iconChanged",onIconLabelChange);
 				part.removeEventListener("labelChanged",onIconLabelChange);
 				part.removeEventListener(PartEvent.DIRTY,onDirtyChange);
@@ -462,7 +466,7 @@ package potomac.ui.defaultUI
 		/**
 		 * @inheritDoc 
 		 */
-		override public function getPartReference(control:Container):PartReference
+		override public function getPartReference(control:UIComponent):PartReference
 		{
 			if (control.parent.parent != getContainer())
 			{

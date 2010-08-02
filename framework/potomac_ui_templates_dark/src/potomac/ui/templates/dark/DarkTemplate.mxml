@@ -5,7 +5,7 @@
 	<mx:Metadata>
 		[Template(id="potomac_dark",properties="logo:image")]
 	</mx:Metadata>
-	
+	   
 	<mx:Style source="tabs.css"/>
 	
 	<mx:Script>
@@ -48,7 +48,7 @@
 									
 				tabNav.validateNow();
 			}
-				
+				 
 			[Handles(event="templateOpenPage")]
 			public function openPage(e:TemplateEvent):void
 			{

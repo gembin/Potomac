@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300" xmlns:local="*">
 	<mx:Metadata>
 		[Folder(id="feedlist",page="rss",location="right",relativeTo="default",percent="80",
 				folderType="titleWindow")]
@@ -9,8 +9,8 @@
 		<![CDATA[
 			import potomac.ui.PartEvent;
 			import mx.events.ListEvent;
-			import potomac.ui.SelectionEvent;
-			import potomac.ui.SelectionService;
+			import potomac.ui.*;
+			
 			
 			[Inject]
 			public var _feedDAO:FeedDAO;
@@ -28,7 +28,7 @@
 			[Handles(source="entries",event="change")]
 			public function onGridSelectionChange(e:ListEvent):void
 			{
-				dispatchEvent(new PartEvent(PartEvent.SELECTION_CHANGED,entries.selectedItems));
+				PartEvent.sendSelectionChanged(this,entries.selectedItems);
 			}
 			
 		]]>

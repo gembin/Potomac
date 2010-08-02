@@ -9,12 +9,21 @@
  *     ElementRiver, LLC. - initial API and implementation
  *******************************************************************************/
 package potomac.ui
-{
+{ 
 	import mx.core.Container;
+	import mx.core.UIComponent;
 	
 	[ExtensionPoint(id="Folder",idRequired="true",page="*string",folderType="string",
 					location="*choice:top,bottom,left,right",relativeTo="*string",
 					percent="*integer",open="boolean")]
+	[ExtensionPointDetails(id="Folder",description="Declares a new Potomac folder in the specified page")]
+	[ExtensionPointDetails(id="Folder",attribute="page",description="Page in which folder should be created",order="1")]
+	[ExtensionPointDetails(id="Folder",attribute="relativeTo",description="The existing folder this new folder will be positioned relative to",order="2")]
+	[ExtensionPointDetails(id="Folder",attribute="location",description="The relative positioning (top,bottom,left,right)",order="3")]
+	[ExtensionPointDetails(id="Folder",attribute="percent",description="The relative percent of the relativeTo folder to occupy",order="4")]
+	[ExtensionPointDetails(id="Folder",attribute="open",description="If false, folder will not automatically be opened/created",order="5",common="false")]
+	[ExtensionPointDetails(id="Folder",attribute="folderType",description="FolderType extension that manages the folder UI.  Default options include 'tabs','accordion','closeableTabs','titleWindow','naked'",order="6",common="false")]
+	
 	/**
 	 * A Folder represents a portion of a Page.  A folder can contain zero, one, or many parts.
 	 */
@@ -163,7 +172,7 @@ package potomac.ui
 		 * @return the part reference.
 		 * 
 		 */
-		public function getPartReference(control:Container):PartReference
+		public function getPartReference(control:UIComponent):PartReference
 		{
 			return null;
 		}

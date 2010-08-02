@@ -1,23 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<actionScriptProperties mainApplicationPath="PotomacMailExample.mxml" version="3">
-<compiler additionalCompilerArguments="-locale en_US -keep-all-type-selectors=true" copyDependentFiles="true" enableModuleDebug="true" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="true" htmlHistoryManagement="false" htmlPlayerVersion="9.0.124" htmlPlayerVersionCheck="true" outputFolderPath="bin-debug" sourceFolderPath="src" strict="true" useApolloConfig="false" verifyDigests="true" warn="true">
-<compilerSourcePath/>
-<libraryPath defaultLinkType="3">
-<libraryPathEntry kind="4" path="">
-<modifiedEntries>
-<libraryPathEntry autoExtract="true" kind="3" linkType="3" path="${PROJECT_FRAMEWORKS}/libs/rpc.swc" rslUrl="rpc.swf" useDefaultLinkType="true"/>
-</modifiedEntries>
-</libraryPathEntry>
-<libraryPathEntry kind="1" linkType="1" path="libs"/>
-<libraryPathEntry autoExtract="true" kind="3" linkType="3" path="/potomac_core/bin/potomac_core.swc" rslUrl="potomac_core.swf" useDefaultLinkType="false"/>
-<libraryPathEntry autoExtract="true" kind="3" linkType="3" path="/potomac_ui/bin/potomac_ui.swc" rslUrl="potomac_ui.swf" useDefaultLinkType="false"/>
-<libraryPathEntry autoExtract="true" kind="3" linkType="3" path="/potomac_ui_templates_dark/bin/potomac_ui_templates_dark.swc" rslUrl="potomac_ui_templates_dark.swf" useDefaultLinkType="false"/>
-</libraryPath>
-<sourceAttachmentPath/>
-</compiler>
-<applications>
-<application path="PotomacMailExample.mxml"/>
-</applications>
-<modules/>
-<buildCSSFiles/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<actionScriptProperties mainApplicationPath="PotomacMailExample.mxml" projectUUID="a4b445b1-b881-4628-a38f-a50387601d9b" version="6">
+  <compiler additionalCompilerArguments="-locale en_US -keep-all-type-selectors=true" autoRSLOrdering="true" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="true" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
+    <compilerSourcePath/>
+    <libraryPath defaultLinkType="3">
+      <libraryPathEntry kind="4" path="">
+        <modifiedEntries>
+          <libraryPathEntry autoExtract="true" kind="3" linkType="3" path="${PROJECT_FRAMEWORKS}/libs/rpc.swc" rslUrl="rpc.swf" useDefaultLinkType="true"/>
+        </modifiedEntries>
+      </libraryPathEntry>
+      <libraryPathEntry kind="1" linkType="1" path="libs"/>
+      <libraryPathEntry autoExtract="true" kind="3" linkType="3" path="/potomac_core/bin/potomac_core.swc" rslUrl="potomac_core.swf" useDefaultLinkType="true"/>
+    </libraryPath>
+    <sourceAttachmentPath/>
+  </compiler>
+  <applications>
+    <application path="main.mxml"/>
+  </applications>
+  <modules/>
+  <buildCSSFiles/>
 </actionScriptProperties>

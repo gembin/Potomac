@@ -12,6 +12,7 @@ package potomac.ui.defaultUI
 {
 	import mx.containers.TitleWindow;
 	import mx.core.Container;
+	import mx.core.UIComponent;
 	
 	import potomac.inject.Injector;
 	import potomac.ui.FolderOptions;
@@ -90,7 +91,7 @@ package potomac.ui.defaultUI
 		/**
 		 * @inheritDoc
 		 */
-		override protected function updateIconLabel(part:Container):void
+		override protected function updateIconLabel(part:UIComponent):void
 		{
 			super.updateIconLabel(part);
 			_titleWindow.title = Container(part.parent).label;

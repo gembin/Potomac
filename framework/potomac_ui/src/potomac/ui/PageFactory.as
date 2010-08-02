@@ -17,7 +17,9 @@ package potomac.ui
 	import potomac.bundle.IBundleService;
 	import potomac.inject.Injector;
 	
-	[ExtensionPoint(id="PageType",type="potomac.ui.Page",idRequired="true",rslRequired="true")]
+	[ExtensionPoint(id="PageType",type="potomac.ui.Page",idRequired="true",preloadRequired="true")]
+	[ExtensionPointDetails(id="PageType",description="Declares a new page UI presentation")]
+	
 	[Injectable(singleton="true")]
 	/**
 	 * A PageFactory creates Page instances.

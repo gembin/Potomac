@@ -1,4 +1,4 @@
-<application template='potomac_dark' enablesForFlags=''>
+<application template='potomac_dark' enablesForFlags='' airBundlesURL='' airDisableCaching='false'>
 <templateData>
    <parameter name='logo' type='image' value='src/logo1.png' />
 </templateData>

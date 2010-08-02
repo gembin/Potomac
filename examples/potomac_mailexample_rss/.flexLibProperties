@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<flexLibProperties version="1">
+<flexLibProperties includeAllClasses="false" version="1">
   <includeClasses>
-    <classEntry path="RSSTree"/>
     <classEntry path="FeedDAO"/>
-    <classEntry path="PostView"/>
     <classEntry path="FeedList"/>
     <classEntry path="FeedSearch"/>
+    <classEntry path="PostView"/>
+    <classEntry path="RSSTree"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

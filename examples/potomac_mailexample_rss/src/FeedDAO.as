@@ -1,10 +1,13 @@
 package
 {
+	import flash.events.Event;
+
 	[Injectable(singleton="true")]
 	public class FeedDAO
 	{
+
 		public function FeedDAO()
-		{
+		{			
 		}
 		
 		public function getEntries(name:String,url:String):Array
