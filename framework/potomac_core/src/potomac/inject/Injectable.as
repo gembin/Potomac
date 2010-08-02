@@ -20,6 +20,7 @@ package potomac.inject
 		private var _providedBy:String;
 		private var _providerInstance:IProvider;
 		private var _singleton:Boolean;
+		private var _asyncInit:Boolean;
 		
 		private var _bundle:String;
 		
@@ -27,14 +28,15 @@ package potomac.inject
 		//tells the injector not to re-inject into singleton instances
 		private var _needsInjection:Boolean = true;
 		
-		public function Injectable(bundle:String,boundTo:String,implementedBy:String=null,named:String=null,singleton:Boolean=false,providedBy:String=null)
+		public function Injectable(bundle:String,boundTo:String,implementedBy:String=null,named:String=null,singleton:Boolean=false,providedBy:String=null,asyncInit:Boolean=false)
 		{
 			_bundle = bundle;
 			_boundTo = boundTo;
 			_implementedBy = implementedBy;
 			_named = named;
 			_singleton = singleton;
-			_providedBy = providedBy;			
+			_providedBy = providedBy;	
+			_asyncInit = asyncInit;
 		}
 		
 		public function get boundTo():String
@@ -76,6 +78,11 @@ package potomac.inject
 			_providerInstance = val;
 		}
 		
+		public function get asyncInit():Boolean
+		{
+			return _asyncInit;
+		}
+
 		public function set instance(val:Object):void
 		{
 			_singleton = true;

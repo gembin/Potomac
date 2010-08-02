@@ -16,30 +16,44 @@ package potomac.inject
 	import flash.utils.getQualifiedSuperclassName;
 	
 	import mx.core.Application;
+	import mx.core.FlexGlobals;
 	import mx.utils.ArrayUtil;
 	
 	import potomac.bundle.Argument;
 	import potomac.bundle.BundleEvent;
 	import potomac.bundle.Extension;
 	import potomac.bundle.IBundleService;
-	import potomac.core.potomac;	
+	import potomac.core.potomac;
 	
 	use namespace potomac;
 	
 	
 	[ExtensionPoint(id="Injectable",access="public",declaredOn="classes",
 					boundTo="type",implementedBy="class",named="string",
-					providedBy="class:potomac.inject.IProvider",singleton="boolean")]
+					providedBy="class:potomac.inject.IProvider",singleton="boolean",asyncInit="boolean")]
+	[ExtensionPointDetails(id="Injectable",description="Binds a class for dependency injection")]
+	[ExtensionPointDetails(id="Injectable",attribute="boundTo",description="Class or interface to bind the class to",order="0",common="false")]
+	[ExtensionPointDetails(id="Injectable",attribute="implementedBy",description="Fully qualified class name of the implementation class. If not specified, the class where the [Injectable] was declared is assumed",order="1",common="false")]
+	[ExtensionPointDetails(id="Injectable",attribute="named",description="Unique string which differentiates this binding from others bound to the same type",order="2",common="false")]
+	[ExtensionPointDetails(id="Injectable",attribute="providedBy",description="Fully qualified class that implements IProvider. Providers allow programmatic control of injection class creation",order="3",common="false")]
+	[ExtensionPointDetails(id="Injectable",attribute="singleton",description="If true the injector will only create one implementation instance for this binding",order="4",defaultValue="true")]
+	[ExtensionPointDetails(id="Injectable",attribute="asyncInit",description="Allows the injectable to invoke asynchronous initialization code. Use sparingly!",order="5")]
+	
 	[ExtensionPoint(id="Inject",argumentsAsAttributes="true",access="public",
 	                declaredOn="variables,methods,constructors")]
+	[ExtensionPointDetails(id="Inject",description="Injects resources using dependency inject")]
+	
 	[ExtensionPoint(id="InjectionListener",type="flash.events.IEventDispatcher",
-					declaredOn="classes",rslRequired="true")]
+					declaredOn="classes",preloadRequired="true")]
+	[ExtensionPointDetails(id="InjectionListener",description="Marks a class as a Potomac managed listener to all injection requests")]
+	
 	/**
 	 * Injector is responsible for creating new classes and injecting dependencies into them.   
 	 * <p>
 	 * Developers may use [Inject] to trigger injection on classes created through the Injector.  
 	 * The inject tag may include attribute names that match the argument or variable names to associate the arguments 
 	 * with named bindings.  For example:
+	 * </p>
 	 * <listing>
 	 * [Inject(field1="green")]
 	 * public var field1:IInterface;
@@ -52,6 +66,7 @@ package potomac.inject
 	 * <p>
 	 * Injection bindings can be created declaratively through [Injectable] or programmatically through bind().  The injectable tag supports parameters 
 	 * to build out injection rules.  The attributes are:
+	 * </p>
 	 * <p>
 	 * <table>
 	 * <tr><td>boundTo</td><td>Fully qualified interface or class name that becomes the binding's front class.</td></tr>
@@ -59,19 +74,22 @@ package potomac.inject
 	 * <tr><td>named</td><td>A unique string which differentiates this binding from others bound to the same type.</td></tr>
 	 * <tr><td>providedBy</td><td>A fully qualified class that implements IProvider.  Providers allow programmatic control of injection class creation.</td></tr>
 	 * <tr><td>singleton</td><td>True/false.  If true the injector will only create one implementation instance for this binding.</td></tr>
+	 * <tr><td>asyncInit</td><td>True/false.  If true the injector allow asynchronous initialization code before declaring the object ready.  When true, injectables must extend flash.events.EventDispatcher and dispatch an InjectInitEvent when complete.  Use sparingly as this feature is incompatible with some synchronous injection features.</td></tr>
 	 * </table>
+	 * </p>
 	 * <p>
 	 * Examples:
+	 * </p>
 	 * <p>
 	 * <listing>
 	 * [Injectable(boundTo="package.IInterface",named="green",providedBy="package.MyProvider",singleton="true")]
 	 * public class InterfaceImpl {
 	 *   ...
 	 * </listing>
+	 * </p>
 	 * <p>
-	 * 
 	 * The primary Potomac injector is available for injection.  It is bound directly to Injector.
-	 * 
+	 * </p>
 	 * @author cgross
 	 */
 	public class Injector
@@ -127,8 +145,13 @@ package potomac.inject
 				{
 					providedBy = ext.providedBy;
 				}
+				var asyncInit:Boolean = false;
+				if (ext.hasOwnProperty("asyncInit"))
+				{
+					asyncInit = ext.asyncInit;
+				}
 				
-				var injectable:Injectable = new Injectable(bundle,boundTo,implementedBy,named,singleton,providedBy);
+				var injectable:Injectable = new Injectable(bundle,boundTo,implementedBy,named,singleton,providedBy,asyncInit);
 				_injectables.push(injectable);
 			}
 			
@@ -211,7 +234,7 @@ package potomac.inject
 			if (listener != null)
 			{
 				injRequest.addEventListener(InjectionEvent.INSTANCE_READY,listener);
-				Application.application.callLater(injRequest.start);
+				FlexGlobals.topLevelApplication.callLater(injRequest.start);
 			}	
 			
 			return injRequest;
@@ -237,7 +260,7 @@ package potomac.inject
 			if (listener != null)
 			{
 				injRequest.addEventListener(InjectionEvent.INSTANCE_READY,listener);
-				Application.application.callLater(injRequest.start);
+				FlexGlobals.topLevelApplication.callLater(injRequest.start);
 			}
 			
 			return injRequest; 
@@ -273,6 +296,26 @@ package potomac.inject
 			}
 		}
 
+		private function getInjectablesForPoints(injectionPoints:Vector.<Extension>):Array
+		{
+			// Called recursively, there could be a problem with cycles between Injects and Injectables, which would cause a stack overflow here
+			var injectables:Array = [];
+			for each (var injectionPoint:Extension in injectionPoints)
+			{
+				injectables = injectables.concat( getInjectablesForPoint(injectionPoint) );	
+			}
+			return injectables;
+		}
+		
+		private function getInjectablesForInjectable(injectable:Injectable):Array
+		{
+			if (!((injectable.implementedBy) && _injectionPoints.hasOwnProperty(injectable.implementedBy)))
+			{
+				return [];
+			}
+			return getInjectablesForPoints( Vector.<Extension>(_injectionPoints[injectable.implementedBy]) );
+		}
+		
 		private function getInjectablesForPoint(injectionPoint:Extension):Array
 		{
 			var injectables:Array = new Array();
@@ -284,6 +327,7 @@ package potomac.inject
 				if (injectable != null)
 				{
 					injectables.push(injectable);
+					injectables = injectables.concat( getInjectablesForInjectable(injectable) );
 				}
 			}
 			else
@@ -305,6 +349,7 @@ package potomac.inject
 					if (injectable != null)
 					{
 						injectables.push(injectable);
+						injectables = injectables.concat( getInjectablesForInjectable(injectable) );
 					}
 				}
 				
@@ -343,6 +388,8 @@ package potomac.inject
 			if (injectable == null && named != null)
 				throw new Error("Injector cannot find an Injectable for " + className + " named = " + named + ".");
 				
+			if (injectable.asyncInit)
+				throw new Error("Cannot create an instance immediately (i.e. synchronously) for injectables with asynchronous initialization.");
 				
 			var obj:Object;
 			if (injectable != null)

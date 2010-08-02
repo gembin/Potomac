@@ -1,0 +1,52 @@
+<overviews> 
+    <packages> 
+        <package name="potomac.bundle"> 
+            <shortDescription> 
+                <![CDATA[ 
+                    Classes associated with the core bundle/modularity services.
+                ]]> 
+            </shortDescription> 
+            <description> 
+                <![CDATA[ 
+                    Classes associated with the core bundle/modularity services.
+                ]]> 
+            </description> 
+        </package>
+                <package name="potomac.core"> 
+            <shortDescription>
+             <![CDATA[  
+        			Core Potomac classes not otherwise associated with the bundle services or dependency injection. 
+                ]]> 
+            </shortDescription> 
+            <description> 
+                <![CDATA[ 
+                    Core Potomac classes not otherwise associated with the bundle services or dependency injection. 
+                ]]> 
+            </description> 
+        </package> 
+                <package name="potomac.inject"> 
+            <shortDescription> 
+                <![CDATA[ 
+                    Dependency injection classes.
+                ]]> 
+            </shortDescription> 
+            <description> 
+                <![CDATA[ 
+                    Classes associated with Potomac's dependency injection features.
+                ]]> 
+            </description> 
+        </package> 
+                <package name="potomac.ui"> 
+            <shortDescription> 
+                <![CDATA[ 
+                    Classes for Potomac's user interface layer.
+                ]]> 
+            </shortDescription> 
+            <description> 
+                <![CDATA[ 
+                    Classes for Potomac's user interface layer.
+                ]]> 
+            </description> 
+        </package>  
+    </packages> 
+</overviews>

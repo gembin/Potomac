@@ -142,13 +142,21 @@ package potomac.inject
 				_phase = PHASE_REFERENCEDBUNDLESLOADING;
 				
 				var loading:Boolean = false;
-				
+				  
 				for (var i:int = 0; i < _waitingForBundles.length; i++)
 				{
 					if (!_bundleSrv.isBundleLoaded(_waitingForBundles[i]))
 					{
 						loading = true;
 						_bundleSrv.loadBundle(_waitingForBundles[i]);
+					}
+					else
+					{
+						//this else statement should fix the 'bundle never loads'
+						//problem when injecting an injectable from a bundle thats
+						//not already loaded
+						_waitingForBundles.splice(i,1);
+						i--;
 					}
 				}
 				if (!loading)

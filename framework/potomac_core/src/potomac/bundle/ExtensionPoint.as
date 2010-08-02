@@ -10,7 +10,20 @@
  *******************************************************************************/
 package potomac.bundle
 {
-	internal dynamic class ExtensionPoint
+	[ExtensionPoint(id="ExtensionPointDetails",declaredOn="classes",idRequired="true",
+				  	attribute="string",description="*string",order="integer",common="boolean",defaultValue="string")]
+	[ExtensionPointDetails(id="ExtensionPointDetails",description="Provides extension point documentation used by SourceMate(tm)")]
+	[ExtensionPointDetails(id="ExtensionPointDetails",attribute="id",description="The id of the extension point being documented",order="0")]
+	[ExtensionPointDetails(id="ExtensionPointDetails",attribute="attribute",description="Attribute to document",order="1")]
+	[ExtensionPointDetails(id="ExtensionPointDetails",attribute="description",description="Point or attribute description",order="2")]
+	[ExtensionPointDetails(id="ExtensionPointDetails",attribute="order",description="Provides for attribute ordering",order="3")]
+	[ExtensionPointDetails(id="ExtensionPointDetails",attribute="common",description="When false, SourceMate will not automatically insert the attribute.",order="4",common="false")]
+	[ExtensionPointDetails(id="ExtensionPointDetails",attribute="defaultValue",description="Default value of the attribute",order="5",common="false")]
+	/**
+	 * @private
+	 * 
+	 */
+	public dynamic class ExtensionPoint
 	{
 		private var _bundleID:String;
 		private var _id:String;

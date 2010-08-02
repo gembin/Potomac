@@ -110,11 +110,11 @@ package potomac.bundle
 					{
 						if (extensionAssets == null)
 						{
-							extensionAssets = new (Class(getDefinitionByName("potomac.derived.ExtensionAssets")))();
+							extensionAssets = new (Class(getDefinitionByName("PotomacAssets_" + _bundleID)))();
 						}
 						
 						//get asset from ExtensionAssets
-						var assetVariable:String = _bundleID + "__" + attribs[i].toString();
+						var assetVariable:String = attribs[i].toString();
 						assetVariable = assetVariable.replace("/","_");
 						assetVariable = assetVariable.replace("\\","_"); 
 						assetVariable = assetVariable.replace(" ","_"); 

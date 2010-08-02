@@ -12,6 +12,8 @@ package potomac.bundle
 {
 	import flash.events.IEventDispatcher;
 	
+	import potomac.core.IPotomacPreloader;
+	
 	/**
 	 * The IBundleService is responsible for loading and managing bundles.  It is also the source for 
 	 * all bundle metadata extensions. 
@@ -23,10 +25,13 @@ package potomac.bundle
 		/**
 		 * Triggers the installation of one or more bundles.  This method is asynchronous.  When the 
 		 * installation is complete a <code>bundlesInstalled</code> event will be dispatched.
-		 * 
-		 * @param installDescriptors An array of <code>BundleInstallDescriptor</code>s.
+		 * <p>
+		 * This method accepts an array that may contain <code>String</code>s that contain just the simple
+		 * bundle ID or <code>BundleInstallDescriptor</code>s if you need to provide a more options.
+		 * </p>
+		 * @param installables An array of bundle IDs as <code>String</code>s or descriptors (<code>BundleInstallDescriptor</code>s).
 		 */		
-		function install(installDescriptors:Array):void
+		function install(installables:Array):void
         
 		/**
 		 * Triggers the retrieval and load of the given bundle.  This method is asynchronous.  A 
@@ -63,5 +68,23 @@ package potomac.bundle
 		 * @return the first matching <code>Extension</code> or null if none exists. 
 		 */	        
         function getExtension(id:String,point:String):Extension
+			
+		/**
+		 * Returns an array of ExtensionPoint objects including 
+		 * each extension point in all installed bundles.
+		 *  
+		 * @return array of ExtensionPoints 
+		 */
+		function getExtensionPoints():Array;
+		
+		/**
+		 * Returns the extension point with the given point id.
+		 *  
+		 * @param pointID id/tag name of the extension point.
+		 * 
+		 * @return the ExtensionPoint
+		 * 
+		 */
+		function getExtensionPoint(pointID:String):ExtensionPoint;
 	}
 }
