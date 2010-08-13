@@ -1,5 +1,6 @@
 package
 {
+	import potomac.bundle.IBundleService;
 	import potomac.ui.Action;
 	import potomac.ui.Folder;
 	import potomac.ui.Page;

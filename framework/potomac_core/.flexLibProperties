@@ -34,6 +34,7 @@
     <classEntry path="potomac.core.LauncherManifest"/>
     <classEntry path="potomac.core.LaunchRunner"/>
     <classEntry path="potomac.core.TemplateRunner"/>
+    <classEntry path="potomac.bundle.BundleDescriptor"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

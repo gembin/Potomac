@@ -1050,6 +1050,7 @@ package potomac.bundle
         {
         	bundles[bundleID].activatorName = bundleXML.@activator;      
         	bundles[bundleID].version = bundleXML.@version;  	
+			bundles[bundleID].name = bundleXML.@name;
         	
         	//required bundles
         	var reqs:Array = new Array();
@@ -1188,6 +1189,46 @@ package potomac.bundle
 			
 			if (throwIt)
 				throw new BundleError(message,bundleID);
+		}
+		
+		/**
+		 * Returns the BundleDescriptor of the installed bundle with the given id.
+		 * <p>
+		 * This method should not be called while bundles are currently installing.
+		 * </p>
+		 * @param bundleID Bundle ID of the bundle whose descriptor is requested.
+		 * 
+		 * @return BundleDescriptor or null of no bundle is found with the given id. 
+		 */
+		public function getBundleDescriptor(bundleID:String):BundleDescriptor
+		{
+			if (bundles[bundleID] == undefined)
+				return null;
+			
+			var swfURL:String = null;
+			if (isBundleLoaded(bundleID))
+				swfURL = bundles[bundleID].url;
+			
+			var desc:BundleDescriptor = new BundleDescriptor(bundleID,bundles[bundleID].requiredBundles,bundles[bundleID].version,bundles[bundleID].name,bundles[bundleID].assetURL,isBundleLoaded(bundleID),swfURL);
+			
+			return desc;
+		}
+		
+		/**
+		 * Returns an array of BundleDescriptors for all installed bundles.
+		 * <p>
+		 * This method should not be called while bundles are currently installing.
+		 * </p>
+		 */		
+		public function get bundleDescriptors():Array
+		{
+			var array:Array = new Array();
+			for (var bundleID:String in bundles)
+			{
+				array.push(getBundleDescriptor(bundleID));
+			}
+			
+			return array;
 		}
 	}
 }

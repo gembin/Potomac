@@ -388,9 +388,7 @@ package potomac.inject
 			if (injectable == null && named != null)
 				throw new Error("Injector cannot find an Injectable for " + className + " named = " + named + ".");
 				
-			if (injectable.asyncInit)
-				throw new Error("Cannot create an instance immediately (i.e. synchronously) for injectables with asynchronous initialization.");
-				
+		
 			var obj:Object;
 			if (injectable != null)
 			{

@@ -86,5 +86,24 @@ package potomac.bundle
 		 * 
 		 */
 		function getExtensionPoint(pointID:String):ExtensionPoint;
+		
+		/**
+		 * Returns an array of BundleDescriptors for all installed bundles.
+		 * <p>
+		 * This method should not be called while bundles are currently installing.
+		 * </p>
+		 */
+		function get bundleDescriptors():Array;
+		
+		/**
+		 * Returns the BundleDescriptor of the installed bundle with the given id.
+		 * <p>
+		 * This method should not be called while bundles are currently installing.
+		 * </p>
+		 * @param bundleID Bundle ID of the bundle whose descriptor is requested.
+		 * 
+		 * @return BundleDescriptor or null of no bundle is found with the given id. 
+		 */
+		function getBundleDescriptor(bundleID:String):BundleDescriptor;
 	}
 }
