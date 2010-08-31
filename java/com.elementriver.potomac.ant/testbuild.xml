@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project name="potomac_core" default="build" basedir="c:/antbuildtest">
+
+	<property name="FLEX_HOME" value="C:/Program Files/Adobe\Adobe Flash Builder 4 Plug-in/sdks/4.0.0"/>
+	<property name="SDK_VERSION" value="4.0.0.14159"/>
+	<property name="POTOMAC_WORKSPACE_HOME" value="c:/antbuildtest"/> <!-- Where the not yet compiled bundles are -->
+	<property name="POTOMAC_TARGET_PLATFORM" value="C:/antbuildtest"/>
+	<property name="POTOMAC_BUILD_OUTPUT" value="c:/Users/cgross/testing"/>
+	<property name="POTOMAC_ANT_JAR" value="c:/Users/cgross/testing.jar"/>
+
+	<taskdef name="bundle" classname="org.potomacframework.build.BundleTask"/>
+    <taskdef name="app" classname="org.potomacframework.build.AppTask"/>
+
+	<taskdef name="html-wrapper" classname="flex.ant.HtmlWrapperTask" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar"/>
+
+	<target name="build">
+	
+		<delete includeEmptyDirs="true">
+  			<fileset dir="${POTOMAC_BUILD_OUTPUT}" includes="**/*" defaultexcludes="no"/>
+		</delete>
+	
+		<bundle id="potomac_core" debug="false" verbose="true" >
+			<source-path path-element="potomac_core/src"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/framework.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/flex.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/spark.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/sparkskins.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/textLayout.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/rpc.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/utilities.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/osmf.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/flash-integration.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/datavisualization.swc"/>
+		</bundle>
+
+	    <bundle id="potomac_ui" debug="false" verbose="true">
+			<source-path path-element="potomac_ui/src"/>
+			<library-path file="potomac_ui/flexlib.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/framework.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/flex.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/spark.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/sparkskins.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/textLayout.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/rpc.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/utilities.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/osmf.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/flash-integration.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/datavisualization.swc"/>
+		</bundle>
+		
+		<bundle id="potomac_ui_templates_dark" debug="false" verbose="true">
+			<source-path path-element="potomac_ui_templates_dark/src"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/framework.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/flex.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/spark.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/sparkskins.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/textLayout.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/rpc.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/utilities.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/osmf.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/flash-integration.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/datavisualization.swc"/>
+		</bundle>
+
+		<bundle id="potomac_mailexample_mail" debug="false" verbose="true">
+			<source-path path-element="potomac_mailexample_mail/src"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/framework.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/flex.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/spark.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/sparkskins.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/textLayout.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/rpc.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/utilities.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/osmf.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/flash-integration.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/datavisualization.swc"/>
+		</bundle>
+		
+		
+		<bundle id="potomac_mailexample_rss" debug="false" verbose="true">
+			<source-path path-element="potomac_mailexample_rss/src"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/framework.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/flex.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/spark.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/sparkskins.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/textLayout.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/rpc.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/utilities.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/osmf.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/flash-integration.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/datavisualization.swc"/>
+		</bundle>
+
+		<bundle id="potomac_advancedexample_core" debug="false" verbose="true" version="HI MOM" >
+			<source-path path-element="potomac_advancedexample_core/src"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/framework.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/flex.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/spark.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/sparkskins.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/textLayout.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/rpc.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/utilities.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/osmf.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/flash-integration.swc"/>
+			<external-library-path file="${FLEX_HOME}/frameworks/libs/datavisualization.swc"/>
+		</bundle>
+		
+		<app id="PotomacAdvancedExample" debug="false" verbose="true" 
+			file="PotomacAdvancedExample/src/PotomacAdvancedExample.mxml">
+			
+			<source-path path-element="PotomacAdvancedExample/src"/>
+			
+			<rsl-path file="${FLEX_HOME}/frameworks/libs/framework.swc">
+				<url rsl-url="http://fpdownload.adobe.com/pub/swz/flex/${SDK_VERSION}/framework_${SDK_VERSION}.swz" policy-file-url="http://fpdownload.adobe.com/pub/swz/crossdomain.xml"/>
+				<url rsl-url="framework_4.0.0.0.swf" policy-file-url=""/>
+			</rsl-path>
+
+			<rsl-path file="${FLEX_HOME}/frameworks/libs/textLayout.swc">
+				<url rsl-url="http://fpdownload.adobe.com/pub/swz/tlf/1.0.0.595/textLayout_1.0.0.595.swz" policy-file-url="http://fpdownload.adobe.com/pub/swz/crossdomain.xml"/>
+				<url rsl-url="textLayout_1.0.0.595.swf" policy-file-url=""/>
+			</rsl-path>
+			
+			<rsl-path file="${FLEX_HOME}/frameworks/libs/osmf.swc">
+				<url rsl-url="http://fpdownload.adobe.com/pub/swz/flex/${SDK_VERSION}/osmf_flex.4.0.0.13495.swz" policy-file-url="http://fpdownload.adobe.com/pub/swz/crossdomain.xml"/>
+				<url rsl-url="osmf_flex.4.0.0.13495.swf" policy-file-url=""/>
+			</rsl-path>
+			
+			<rsl-path file="${FLEX_HOME}/frameworks/libs/rpc.swc">
+				<url rsl-url="http://fpdownload.adobe.com/pub/swz/flex/4.0.0.14159/rpc_${SDK_VERSION}.swz" policy-file-url="http://fpdownload.adobe.com/pub/swz/crossdomain.xml"/>
+				<url rsl-url="rpc_4.0.0.0.swf" policy-file-url=""/>
+			</rsl-path>
+			
+			<rsl-path file="${FLEX_HOME}/frameworks/libs/spark.swc">
+				<url rsl-url="http://fpdownload.adobe.com/pub/swz/flex/${SDK_VERSION}/spark_${SDK_VERSION}.swz" policy-file-url="http://fpdownload.adobe.com/pub/swz/crossdomain.xml"/>
+				<url rsl-url="spark_4.0.0.0.swf" policy-file-url=""/>
+			</rsl-path>
+			
+			<rsl-path file="${FLEX_HOME}/frameworks/libs/sparkskins.swc">
+				<url rsl-url="http://fpdownload.adobe.com/pub/swz/flex/${SDK_VERSION}/sparkskins_${SDK_VERSION}.swz" policy-file-url="http://fpdownload.adobe.com/pub/swz/crossdomain.xml"/>
+				<url rsl-url="sparkskins_4.0.0.0.swf" policy-file-url=""/>
+			</rsl-path>
+
+			<library-path file="${FLEX_HOME}/frameworks/libs/flash-integration.swc"/>
+			<library-path file="${FLEX_HOME}/frameworks/libs/flex.swc"/>
+			<library-path file="${FLEX_HOME}/frameworks/libs/utilities.swc"/>
+			<library-path file="${FLEX_HOME}/frameworks/libs/datavisualization.swc"/>
+
+			
+		</app>
+		
+		<app id="PotomacMailExample" debug="false" verbose="true" 
+			file="PotomacMailExample/src/main.mxml">
+			
+			<source-path path-element="PotomacMailExample/src"/>
+			
+			<rsl-path file="${FLEX_HOME}/frameworks/libs/framework.swc">
+				<url rsl-url="http://fpdownload.adobe.com/pub/swz/flex/${SDK_VERSION}/framework_${SDK_VERSION}.swz" policy-file-url="http://fpdownload.adobe.com/pub/swz/crossdomain.xml"/>
+				<url rsl-url="framework_4.0.0.0.swf" policy-file-url=""/>
+			</rsl-path>
+
+			<rsl-path file="${FLEX_HOME}/frameworks/libs/textLayout.swc">
+				<url rsl-url="http://fpdownload.adobe.com/pub/swz/tlf/1.0.0.595/textLayout_1.0.0.595.swz" policy-file-url="http://fpdownload.adobe.com/pub/swz/crossdomain.xml"/>
+				<url rsl-url="textLayout_1.0.0.595.swf" policy-file-url=""/>
+			</rsl-path>
+			
+			<rsl-path file="${FLEX_HOME}/frameworks/libs/osmf.swc">
+				<url rsl-url="http://fpdownload.adobe.com/pub/swz/flex/${SDK_VERSION}/osmf_flex.4.0.0.13495.swz" policy-file-url="http://fpdownload.adobe.com/pub/swz/crossdomain.xml"/>
+				<url rsl-url="osmf_flex.4.0.0.13495.swf" policy-file-url=""/>
+			</rsl-path>
+			
+			<rsl-path file="${FLEX_HOME}/frameworks/libs/rpc.swc">
+				<url rsl-url="http://fpdownload.adobe.com/pub/swz/flex/4.0.0.14159/rpc_${SDK_VERSION}.swz" policy-file-url="http://fpdownload.adobe.com/pub/swz/crossdomain.xml"/>
+				<url rsl-url="rpc_4.0.0.0.swf" policy-file-url=""/>
+			</rsl-path>
+			
+			<rsl-path file="${FLEX_HOME}/frameworks/libs/spark.swc">
+				<url rsl-url="http://fpdownload.adobe.com/pub/swz/flex/${SDK_VERSION}/spark_${SDK_VERSION}.swz" policy-file-url="http://fpdownload.adobe.com/pub/swz/crossdomain.xml"/>
+				<url rsl-url="spark_4.0.0.0.swf" policy-file-url=""/>
+			</rsl-path>
+			
+			<rsl-path file="${FLEX_HOME}/frameworks/libs/sparkskins.swc">
+				<url rsl-url="http://fpdownload.adobe.com/pub/swz/flex/${SDK_VERSION}/sparkskins_${SDK_VERSION}.swz" policy-file-url="http://fpdownload.adobe.com/pub/swz/crossdomain.xml"/>
+				<url rsl-url="sparkskins_4.0.0.0.swf" policy-file-url=""/>
+			</rsl-path>
+
+			<library-path file="${FLEX_HOME}/frameworks/libs/flash-integration.swc"/>
+			<library-path file="${FLEX_HOME}/frameworks/libs/flex.swc"/>
+			<library-path file="${FLEX_HOME}/frameworks/libs/utilities.swc"/>
+			<library-path file="${FLEX_HOME}/frameworks/libs/datavisualization.swc"/>
+
+			
+		</app>
+		
+		<copy file="${FLEX_HOME}/frameworks/rsls/rpc_${SDK_VERSION}.swf" tofile="${POTOMAC_BUILD_OUTPUT}/PotomacMailExample/rpc_${SDK_VERSION}.swf"/>
+		<copy file="${FLEX_HOME}/frameworks/rsls/spark_${SDK_VERSION}.swf" tofile="${POTOMAC_BUILD_OUTPUT}/PotomacMailExample/spark_${SDK_VERSION}.swf"/>
+		<copy file="${FLEX_HOME}/frameworks/rsls/osmf_flex.4.0.0.13495.swf" tofile="${POTOMAC_BUILD_OUTPUT}/PotomacMailExample/osmf_flex.4.0.0.13495.swf"/>
+		<copy file="${FLEX_HOME}/frameworks/rsls/sparkskins_${SDK_VERSION}.swf" tofile="${POTOMAC_BUILD_OUTPUT}/PotomacMailExample/sparkskins_${SDK_VERSION}.swf"/>
+		<copy file="${FLEX_HOME}/frameworks/rsls/framework_${SDK_VERSION}.swf" tofile="${POTOMAC_BUILD_OUTPUT}/PotomacMailExample/framework_${SDK_VERSION}.swf"/>
+		<copy file="${FLEX_HOME}/frameworks/rsls/textLayout_1.0.0.595.swf" tofile="${POTOMAC_BUILD_OUTPUT}/PotomacMailExample/textLayout_4.0.0.0.swf"/>
+		
+	    <html-wrapper 
+			output="${POTOMAC_BUILD_OUTPUT}/PotomacMailExample"
+			file="PotomacMailExample.html"
+			swf="main"
+			history="false"
+			express-install="true"
+			version-detection="true"
+			version-major="10"
+			version-minor="0"
+			version-revision="0"
+			height="100%"
+			width="100%"
+			title="Potomac Mail Example"
+			bgcolor="white"
+		/> 
+
+
+		<copy file="${FLEX_HOME}/frameworks/rsls/rpc_${SDK_VERSION}.swf" tofile="${POTOMAC_BUILD_OUTPUT}/PotomacAdvancedExample/rpc_${SDK_VERSION}.swf"/>
+		<copy file="${FLEX_HOME}/frameworks/rsls/spark_${SDK_VERSION}.swf" tofile="${POTOMAC_BUILD_OUTPUT}/PotomacAdvancedExample/spark_${SDK_VERSION}.swf"/>
+		<copy file="${FLEX_HOME}/frameworks/rsls/osmf_flex.4.0.0.13495.swf" tofile="${POTOMAC_BUILD_OUTPUT}/PotomacAdvancedExample/osmf_flex.4.0.0.13495.swf"/>
+		<copy file="${FLEX_HOME}/frameworks/rsls/sparkskins_${SDK_VERSION}.swf" tofile="${POTOMAC_BUILD_OUTPUT}/PotomacAdvancedExample/sparkskins_${SDK_VERSION}.swf"/>
+		<copy file="${FLEX_HOME}/frameworks/rsls/framework_${SDK_VERSION}.swf" tofile="${POTOMAC_BUILD_OUTPUT}/PotomacAdvancedExample/framework_${SDK_VERSION}.swf"/>
+		<copy file="${FLEX_HOME}/frameworks/rsls/textLayout_1.0.0.595.swf" tofile="${POTOMAC_BUILD_OUTPUT}/PotomacAdvancedExample/textLayout_4.0.0.0.swf"/>
+		
+	    <html-wrapper 
+			output="${POTOMAC_BUILD_OUTPUT}/PotomacAdvancedExample"
+			file="PotomacAdvancedExample.html"
+			swf="PotomacAdvancedExample"
+			history="false"
+			express-install="true"
+			version-detection="true"
+			version-major="10"
+			version-minor="0"
+			version-revision="0"
+			height="100%"
+			width="100%"
+			title="Potomac Advanced Example"
+			bgcolor="white"
+		/> 
+
+
+
+
+					
+	</target>
+
+
+</project>
