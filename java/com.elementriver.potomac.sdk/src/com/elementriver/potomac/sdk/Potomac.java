@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -284,19 +285,130 @@ public class Potomac {
 			}
 		});		
 	}
-   
-	public static ArrayList<IClass> getAllClassesInFolder(IFolder folder,String instanceOf) throws CoreException
+	
+	public static ArrayList<IClass> getAllClassesInProject(IProject project, String instanceOf) throws CoreException
 	{
-		//System.out.println("starting gtet all classes");
-		
-		ArrayList<IClass> types = new ArrayList<IClass>();
-		com.adobe.flexbuilder.codemodel.project.IProject flexProj = CMFactory.getManager().getProjectFor(folder.getProject());
-		
-		for (IResource member : folder.members())
+		if (!CMFactory.getRegistrar().isProjectRegistered(project))
 		{
-			if (member instanceof IFile)
+			CMFactory.getRegistrar().registerProject(project,null);
+		}	
+		
+		IClassPathEntry srcPaths[] = ActionScriptCore.getProject(project).getProjectSettings().getSourcePath();
+
+		ArrayList<IClass> types = new ArrayList<IClass>();
+		
+		synchronized (CMFactory.getLockObject())
+   	 	{
+			for (int i = 0; i < srcPaths.length; i++)
 			{
-				IFileNode node = flexProj.findFileNodeInProject(member.getLocation());
+				IClassPathEntry iCPE = srcPaths[i];
+				
+				IFolder folder = ResourcesPlugin.getWorkspace().getRoot().getFolder(iCPE.getResolvedPath());
+				
+				types.addAll(getAllClassesInFolder(iCPE.getResolvedPath().makeAbsolute().toFile(),project, instanceOf));
+				
+			}
+			
+			File file = project.getFile(ActionScriptCore.getProject(project).getProjectSettings().getMainSourceFolder()).getLocation().makeAbsolute().toFile();
+			ArrayList<IClass> clzes = getAllClassesInFolder(file, project, instanceOf);
+			for (IClass clz : clzes)
+			{
+				if (!types.contains(clz))
+					types.add(clz);
+			}
+   	 	}
+		
+		return types;
+	}
+   
+	public static ArrayList<IDefinition> getAllDefinitionsInProject(IProject project) throws CoreException
+	{
+		if (!CMFactory.getRegistrar().isProjectRegistered(project))
+		{
+			CMFactory.getRegistrar().registerProject(project,null);
+		}	
+		
+		IClassPathEntry srcPaths[] = ActionScriptCore.getProject(project).getProjectSettings().getSourcePath();
+
+		ArrayList<IDefinition> defs = new ArrayList<IDefinition>();
+		
+		synchronized (CMFactory.getLockObject())
+   	 	{
+			for (int i = 0; i < srcPaths.length; i++)
+			{
+				IClassPathEntry iCPE = srcPaths[i];
+				
+				IPath path = iCPE.getResolvedPath();
+				
+				defs.addAll(getAllDefinitionsInFolder(path.toFile(),project));
+				
+			}
+			
+			File file = project.getFile(ActionScriptCore.getProject(project).getProjectSettings().getMainSourceFolder()).getLocation().makeAbsolute().toFile();
+			ArrayList<IDefinition> defs2 = getAllDefinitionsInFolder(file, project);
+			for (IDefinition def : defs2)
+			{
+				if (!defs.contains(def))
+					defs.add(def);
+			}
+   	 	}
+		
+		return defs;
+	}
+	
+	private static ArrayList<IDefinition> getAllDefinitionsInFolder(File folder,IProject project) throws CoreException
+	{		
+		ArrayList<IDefinition> defs = new ArrayList<IDefinition>();
+		
+		if (!folder.exists())
+			return defs;
+		
+		com.adobe.flexbuilder.codemodel.project.IProject flexProj = CMFactory.getManager().getProjectFor(project);
+		
+
+		for (File member : folder.listFiles())
+		{
+			if (member.isFile())
+			{
+				IFileNode node = flexProj.findFileNodeInProject(new Path(member.getAbsolutePath()));
+				if (node != null)
+				{
+					IDefinition topDefs[] = node.getAllTopLevelDefinitions(true,true);
+					for (IDefinition def : topDefs)
+					{
+						if (!defs.contains(def))
+							defs.add(def);
+					}
+				}
+			}
+			else if (member.isDirectory())
+			{
+				ArrayList<IDefinition> defs2 = getAllDefinitionsInFolder(member,project);
+				for (IDefinition def : defs2)
+				{
+					if (!defs2.contains(def))
+						defs2.add(def);
+				}
+			}
+		}
+
+		return defs;
+	}
+	
+	private static ArrayList<IClass> getAllClassesInFolder(File folder, IProject project, String instanceOf) throws CoreException
+	{
+		ArrayList<IClass> types = new ArrayList<IClass>();
+		
+		if (!folder.exists())
+			return types;
+		
+		com.adobe.flexbuilder.codemodel.project.IProject flexProj = CMFactory.getManager().getProjectFor(project);
+
+		for (File member : folder.listFiles())
+		{
+			if (member.isFile())
+			{
+				IFileNode node = flexProj.findFileNodeInProject(new Path(member.getAbsolutePath()));
 				if (node != null)
 				{
 					IDefinition defs[] = node.getAllTopLevelDefinitions(true,true);
@@ -306,24 +418,29 @@ public class Potomac {
 						{
 							if (def instanceof IClass && ((IClass)def).isInstanceOf(instanceOf))
 							{
-								types.add((IClass) def);	
+								if (!types.contains((IClass)def))
+										types.add((IClass) def);	
 							} 
 						}
 						else if (def instanceof IClass)
 						{
-							types.add((IClass) def);	
+							if (!types.contains((IClass)def))
+								types.add((IClass) def);	
 						}
 					}
 				}
 			}
-			else if (member instanceof IFolder)
+			else if (member.isDirectory())
 			{
-				types.addAll(getAllClassesInFolder((IFolder) member,instanceOf));
+				ArrayList<IClass> clzes = getAllClassesInFolder(member,project,instanceOf);
+				for (IClass clz : clzes)
+				{
+					if (!types.contains(clz))
+						types.add(clz);
+				}
 			}
 		}
-		
-		//System.out.println("finished getallclasses");
-		
+
 		return types;
 	}
 	

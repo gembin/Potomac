@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -236,10 +235,8 @@ public class BundleXMLEditor extends MultiPageEditorPart implements IResourceCha
 					public void dispose() {
 					}
 					public Object[] getElements(Object inputElement) {
-						IProject proj = bundlexml.getProject();
-						IFolder src = proj.getFolder(Potomac.getSourceDirectory(proj));
 						try {
-							return Potomac.getAllClassesInFolder(src,"flash.events.IEventDispatcher").toArray();
+							return Potomac.getAllClassesInProject(bundlexml.getProject(),"flash.events.IEventDispatcher").toArray();
 						} catch (CoreException e) {
 							e.printStackTrace();
 							MessageDialog.openError(null, "Error Retrieving Classes", e.getMessage());

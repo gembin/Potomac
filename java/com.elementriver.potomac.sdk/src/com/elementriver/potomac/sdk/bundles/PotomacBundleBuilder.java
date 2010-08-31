@@ -44,13 +44,10 @@ import com.adobe.flexbuilder.codemodel.definitions.IVariable;
 import com.adobe.flexbuilder.codemodel.definitions.metadata.IMetaTag;
 import com.adobe.flexbuilder.codemodel.indices.IClassNameIndex;
 import com.adobe.flexbuilder.codemodel.indices.IInterfaceNameIndex;
-import com.adobe.flexbuilder.codemodel.internal.project.SWCFileSpecification;
-import com.adobe.flexbuilder.codemodel.internal.resourcehandlers.SWCFileHandler;
 import com.adobe.flexbuilder.codemodel.internal.testing.IAdaptableNode;
 import com.adobe.flexbuilder.codemodel.internal.tree.AccessorNode;
 import com.adobe.flexbuilder.codemodel.internal.tree.ClassNode;
 import com.adobe.flexbuilder.codemodel.internal.tree.NodeBase;
-import com.adobe.flexbuilder.codemodel.internal.tree.SWCFileNode;
 import com.adobe.flexbuilder.codemodel.internal.tree.metadata.MetaTagNode;
 import com.adobe.flexbuilder.codemodel.internal.tree.metadata.MetaTagsNode;
 import com.adobe.flexbuilder.codemodel.internal.tree.mxml.BindableVariableNode;
@@ -60,7 +57,6 @@ import com.adobe.flexbuilder.project.actionscript.IActionScriptProject;
 import com.adobe.flexbuilder.project.compiler.Problem;
 import com.adobe.flexbuilder.project.compiler.StyleProblem;
 import com.adobe.flexbuilder.project.internal.FlexLibraryProjectSettings;
-import com.elementriver.potomac.sdk.Activator;
 import com.elementriver.potomac.sdk.ExtensionAndPointsUtil;
 import com.elementriver.potomac.sdk.IgnoredMetadata;
 import com.elementriver.potomac.sdk.Potomac;
@@ -152,6 +148,29 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 						doBuild = true;
 					}
 					
+					if (!doBuild)
+					{
+						IClassPathEntry srcPaths[] = ActionScriptCore.getProject(getProject()).getProjectSettings().getSourcePath();
+
+						synchronized (CMFactory.getLockObject())
+				   	 	{
+							for (int i = 0; i < srcPaths.length; i++)
+							{
+								IClassPathEntry iCPE = srcPaths[i];
+								
+								String val = iCPE.getValue();
+								
+								Path path = new Path(val);
+								
+								if (delta.findMember(path) != null)
+								{
+									doBuild = true;
+									break;
+								}								
+							}	
+				   	 	}
+					}
+					
 					refreshBundleXMLModel = (delta.findMember(new Path("bundle.xml")) != null);
 					
 					
@@ -210,7 +229,9 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 	protected void potomacBuild(final IProgressMonitor monitor, boolean refreshBundleXMLModel,boolean cleanBuild)
 			throws CoreException {
 		
-		//System.out.println("bundle full build " + getProject().getName());
+		//VERY VERY IMPORTANT!
+		//http://bugs.adobe.com/jira/browse/FB-27286
+		ResourcesPlugin.getWorkspace().checkpoint(false);	
 		
 		Potomac.log("["+getProject().getName()+"] Deleting markers");
 		getProject().deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_INFINITE);
@@ -383,14 +404,14 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 				
 				if (settings.isIncludeAllClasses())
 				{
-					IFolder src = getProject().getFolder(ActionScriptCore.getProject(getProject()).getProjectSettings().getMainSourceFolder().toString());
-					ArrayList<IClass> types = Potomac.getAllClassesInFolder(src,null);
-					ArrayList<String> clzes = new ArrayList<String>();
-					for (IClass clz : types)
+					ArrayList<IDefinition> defs = Potomac.getAllDefinitionsInProject(getProject());
+					ArrayList<String> defNames = new ArrayList<String>();
+					for (IDefinition def : defs)
 					{
-						clzes.add(clz.getQualifiedName());
+						if (!def.isImplicit())
+							defNames.add(def.getQualifiedName());
 					}
-					config.setIncludes(clzes.toArray(new String[]{}));
+					config.setIncludes(defNames.toArray(new String[]{}));
 				}
 				else
 				{
@@ -643,11 +664,28 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 				
 				config.setLocale(locales.split(","));
 			}
-
-			config.enableDebugging(true,"");
-			config.addSourcePath(new File[]{sourceDir});
-			config.keepAllTypeSelectors(true);	
 			
+			IClassPathEntry srcPaths[] = settings.getSourcePath();
+	
+			ArrayList<File> fileSrcPaths = new ArrayList<File>();
+			fileSrcPaths.add(sourceDir);
+			
+			for (int i = 0; i < srcPaths.length; i++)
+			{
+				IClassPathEntry iCPE = srcPaths[i];
+				
+				IFolder folder = ResourcesPlugin.getWorkspace().getRoot().getFolder(iCPE.getResolvedPath());
+				
+				fileSrcPaths.add(iCPE.getResolvedPath().makeAbsolute().toFile());
+				
+			}
+
+
+			config.addSourcePath(fileSrcPaths.toArray(new File[]{}));
+			
+			
+			config.keepAllTypeSelectors(true);	
+			config.enableDebugging(true,"");			
 			config.setLocalFontSnapshot(new File(settings.getFlexSDK().getFlexConfigDir(),"localFonts.ser"));
 		}
 			
@@ -676,8 +714,7 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 		
 		synchronized (CMFactory.getLockObject())
    	 	{	
-			IFolder src = getProject().getFolder(ActionScriptCore.getProject(getProject()).getProjectSettings().getMainSourceFolder().toString());
-			types = Potomac.getAllClassesInFolder(src,null);
+			types = Potomac.getAllClassesInProject(getProject(),null);
    	 	}
 		
 		//first get all extPts	
@@ -717,7 +754,7 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 						int codeOffsets[] = new int[2];
 						getStartAndEndForTag(tag, codeOffsets);
 						
-						IFile file = getProject().getWorkspace().getRoot().getFileForLocation(new Path(type.getContainingSourceFilePath()));
+						IFile file = getProject().getWorkspace().getRoot().findFilesForLocation(new Path(type.getContainingSourceFilePath()))[0];
 						addMarker(file, msg, codeOffsets[0],codeOffsets[1], IMarker.SEVERITY_WARNING);
 					}
 					
@@ -1601,119 +1638,124 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 	{
 				
 		IType type = var.resolveVariableType(null);
-		boolean isnull = false;
 		if (type == null)
-		{
-			isnull = true;
-			//There appears to be some bug in the FB code model API where resolveVarType returns null unexpectedly
-			//We can track this down it appears that the project's class index does not contain all the expected/necessary classes
-			//The class index sometimes seems to be missing classes.  In all our instances, the missing classes were from referenced
-			//dependency bundles.  
-			//The code below then looks through the referenced bundle project's individual class indexes to see if we can manually
-			//resolve the var type.
-			
-			Collection<String> imports = new ArrayList<String>();
-			IType parentType = (IType) var.getAncestorOfType(IType.class);
-			
-			parentType.getScope().getAllImports(imports);
-			
-			//instead we need to go through the classpath entries
-			BundleModel model = BundleModelManager.getInstance().getModel(getProject().getName());	
-			
-			for (String dependency : model.dependencies)
-			{
-				
-				IProject dependencyProject = ResourcesPlugin.getWorkspace().getRoot().getProject(dependency);
-				com.adobe.flexbuilder.codemodel.project.IProject flexProject = null;
-				
-				if (dependencyProject == null || !dependencyProject.exists())
-				{
-					String swcPath = Potomac.getSWCPath(dependency);
-					String targetPlat = Potomac.getTargetPlatform();
-					if (swcPath.startsWith("${"+Activator.TARGETPLAT_PATHVAR+"}"))
-					{
-						swcPath = swcPath.substring(("${"+Activator.TARGETPLAT_PATHVAR+"}").length());
-						swcPath = targetPlat + swcPath;
-					}
-					
-					SWCFileSpecification swcFile = new SWCFileSpecification(swcPath);
-					
-					SWCFileNode parseFile = SWCFileHandler.getHandler().parseFile(swcFile);
-					parseFile.postProcess();
-					
-					IDefinition defs[] = parseFile.getAllTopLevelDefinitions(false, false);
-					
-					String varType = var.getVariableType();
-
-					for (IDefinition def : defs)
-					{
-						if (varType.equals(def.getQualifiedName()))
-						{
-							type = (IType) def;
-							break;
-						}
-						if (varType.equals(def.getShortName()))
-						{
-							for (String imp : imports)
-							{
-								if (imp.equals(def.getQualifiedName()))
-								{
-									type = (IType) def;
-									break;
-								}
-								if (imp.equals(def.getPackageName() + ".*"))
-								{
-									type = (IType) def;
-									break;
-								}
-							}
-							
-							if (type != null)
-								break;
-						}
-					}
-					
-					if (type != null)
-						break;
-				}
-				else
-				{
-					flexProject = CMFactory.getManager().getProjectFor(dependencyProject);
-				}
-
-				
-				if (flexProject == null)
-					continue;
-				
-				IClassNameIndex index = (IClassNameIndex) flexProject.getIndex(IClassNameIndex.ID);
-				
-				if (index == null)
-					continue;
-				
-				IClass clz = index.getByAsIsName(var.getVariableType(), imports);
-				if (clz != null)
-				{
-					type = clz;
-					break;
-				}
-				if (type == null)
-				{
-					IInterfaceNameIndex iIndex = (IInterfaceNameIndex) flexProject.getIndex(IInterfaceNameIndex.ID);
-					IInterface ifc = iIndex.getByAsIsName(var.getVariableType(), imports);
-					if (ifc != null)
-					{
-						type = ifc;
-						break;
-					}
-				}
-			}
-		}
-		
-		if (type == null){
 			return null;
-		}
-
+		
 		return type.getQualifiedName();
+		
+//		boolean isnull = false;
+//		if (type == null)
+//		{
+//			isnull = true;
+//			//There appears to be some bug in the FB code model API where resolveVarType returns null unexpectedly
+//			//We can track this down it appears that the project's class index does not contain all the expected/necessary classes
+//			//The class index sometimes seems to be missing classes.  In all our instances, the missing classes were from referenced
+//			//dependency bundles.  
+//			//The code below then looks through the referenced bundle project's individual class indexes to see if we can manually
+//			//resolve the var type.
+//			
+//			Collection<String> imports = new ArrayList<String>();
+//			IType parentType = (IType) var.getAncestorOfType(IType.class);
+//			
+//			parentType.getScope().getAllImports(imports);
+//			
+//			//instead we need to go through the classpath entries
+//			BundleModel model = BundleModelManager.getInstance().getModel(getProject().getName());	
+//			
+//			for (String dependency : model.dependencies)
+//			{
+//				
+//				IProject dependencyProject = ResourcesPlugin.getWorkspace().getRoot().getProject(dependency);
+//				com.adobe.flexbuilder.codemodel.project.IProject flexProject = null;
+//				
+//				if (dependencyProject == null || !dependencyProject.exists())
+//				{
+//					String swcPath = Potomac.getSWCPath(dependency);
+//					String targetPlat = Potomac.getTargetPlatform();
+//					if (swcPath.startsWith("${"+Activator.TARGETPLAT_PATHVAR+"}"))
+//					{
+//						swcPath = swcPath.substring(("${"+Activator.TARGETPLAT_PATHVAR+"}").length());
+//						swcPath = targetPlat + swcPath;
+//					}
+//					
+//					SWCFileSpecification swcFile = new SWCFileSpecification(swcPath);
+//					
+//					SWCFileNode parseFile = SWCFileHandler.getHandler().parseFile(swcFile);
+//					parseFile.postProcess();
+//					
+//					IDefinition defs[] = parseFile.getAllTopLevelDefinitions(false, false);
+//					
+//					String varType = var.getVariableType();
+//
+//					for (IDefinition def : defs)
+//					{
+//						if (varType.equals(def.getQualifiedName()))
+//						{
+//							type = (IType) def;
+//							break;
+//						}
+//						if (varType.equals(def.getShortName()))
+//						{
+//							for (String imp : imports)
+//							{
+//								if (imp.equals(def.getQualifiedName()))
+//								{
+//									type = (IType) def;
+//									break;
+//								}
+//								if (imp.equals(def.getPackageName() + ".*"))
+//								{
+//									type = (IType) def;
+//									break;
+//								}
+//							}
+//							
+//							if (type != null)
+//								break;
+//						}
+//					}
+//					
+//					if (type != null)
+//						break;
+//				}
+//				else
+//				{
+//					flexProject = CMFactory.getManager().getProjectFor(dependencyProject);
+//				}
+//
+//				
+//				if (flexProject == null)
+//					continue;
+//				
+//				IClassNameIndex index = (IClassNameIndex) flexProject.getIndex(IClassNameIndex.ID);
+//				
+//				if (index == null)
+//					continue;
+//				
+//				IClass clz = index.getByAsIsName(var.getVariableType(), imports);
+//				if (clz != null)
+//				{
+//					type = clz;
+//					break;
+//				}
+//				if (type == null)
+//				{
+//					IInterfaceNameIndex iIndex = (IInterfaceNameIndex) flexProject.getIndex(IInterfaceNameIndex.ID);
+//					IInterface ifc = iIndex.getByAsIsName(var.getVariableType(), imports);
+//					if (ifc != null)
+//					{
+//						type = ifc;
+//						break;
+//					}
+//				}
+//			}
+//		}
+//		
+//		if (type == null){
+//			return null;
+//		}
+//
+//		return type.getQualifiedName();
 	}
 	
 	
