@@ -170,12 +170,13 @@ public class BundleTask extends Task implements DynamicConfigurator {
 	
 	private boolean accessible = false;
 	private boolean debug = false;
+	private boolean verbosestacktraces = false;
 	
 	private List<SourcePath> srcPaths = new ArrayList<SourcePath>();
 	private List<LibraryPath> libPaths = new ArrayList<LibraryPath>();
 	private List<ExternalLibraryPath> extPaths = new ArrayList<ExternalLibraryPath>();
 
-	private LoadConfig loadConfig;
+	private List<LoadConfig> loadConfigs = new ArrayList<LoadConfig>();
 	
 	private String locale;
 	
@@ -184,6 +185,11 @@ public class BundleTask extends Task implements DynamicConfigurator {
 	public void setId(String id)
 	{
 		this.id = id;
+	}
+	
+	public void setVerbosestacktraces(boolean verbosestacktraces)
+	{
+		this.verbosestacktraces = verbosestacktraces;
 	}
 	
 	public void setAccessible(boolean accessible)
@@ -471,14 +477,9 @@ public class BundleTask extends Task implements DynamicConfigurator {
 		Application assetApp = new Application(assetsVF);
 		Configuration assetsConfig = assetApp.getDefaultConfiguration();
 		
-		if (loadConfig == null)
-		{
-			assetsConfig.setConfiguration(new File(sdkPath.toString() + "/frameworks/flex-config.xml"));
-		}
-		else
-		{
-			assetsConfig.setConfiguration(new File(loadConfig.getPath().toString()));
-		}
+		//force the assets.swf compile to use the base config
+		assetsConfig.setConfiguration(new File(sdkPath.toString() + "/frameworks/flex-config.xml"));
+
 		
 		assetsConfig.addExternalLibraryPath(new File[]{new File(sdkPath.toString() + "/frameworks/libs/flex.swc")});
 		assetsConfig.setLibraryPath(new File[]{});
@@ -526,17 +527,22 @@ public class BundleTask extends Task implements DynamicConfigurator {
 	
 	private void configureConfiguration(Configuration config)
 	{
-		if (loadConfig == null)
+		if (loadConfigs.size() == 0)
 		{
 			config.setConfiguration(new File(sdkPath.toString() + "/frameworks/flex-config.xml"));
 		}
 		else
 		{
-			config.setConfiguration(new File(loadConfig.getPath().toString()));
+			config.setConfiguration(new File(loadConfigs.get(0).getPath().toString()));
+			for (int i = 1; i < loadConfigs.size(); i++)
+			{
+				config.addConfiguration(new File(loadConfigs.get(i).getPath().toString()));
+			}
 		}
 		
 		
 		config.enableDebugging(debug,"");
+		config.enableVerboseStacktraces(verbosestacktraces);
 		for(SourcePath sp : srcPaths)
 		{
 			config.addSourcePath(new File[]{new File(sp.getPath().toString())});
@@ -636,7 +642,7 @@ public class BundleTask extends Task implements DynamicConfigurator {
 		if (name.equals("load-config"))
 		{
 			LoadConfig lc = new LoadConfig(getProject());
-			loadConfig = lc;
+			loadConfigs.add(lc);
 			return lc;
 		}
 		
