@@ -10,6 +10,8 @@
  *******************************************************************************/
 package potomac.bundle
 {
+	import mx.utils.StringUtil;
+
 	/**
 	 * Method represents a method on which an extension was declared.
 	 * 
@@ -32,6 +34,8 @@ package potomac.bundle
 			
 			var args:String = functionSignature.substring(1,functionSignature.indexOf(")"));
 			var argsArray:Array = args.split(",");
+			if (StringUtil.trim(args).length == 0)
+				argsArray.pop();
 			var varName:String;
 			var varType:String;
 			var hasDefault:Boolean;

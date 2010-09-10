@@ -24,7 +24,7 @@
 		
 		[Inject] 
 		public var _potomacUI:PotomacUI;
-		
+
 		public var _fakeService:FakeService = new FakeService();
 		
 		[Handles(event="partInitialize")]
@@ -56,13 +56,13 @@
 			}
 		}
 		
-		[Handles(event="sendreceive")]
-		public function onSendReceive(e:Event):void
+		[Handles(global="true",event="sendreceive")]
+		public function onSendReceive():void
 		{
 			PartEvent.sendBusy(this,"Retrieving Messages...");
 			_fakeService.go(2500);
 		}
-		
+
 		[Handles(source="_fakeService",event="fakeComplete")]
 		public function onFakeServiceComplete(e:Event):void
 		{

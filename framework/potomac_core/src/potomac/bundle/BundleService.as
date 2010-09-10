@@ -28,6 +28,7 @@ package potomac.bundle
 	import flash.system.SecurityDomain;
 	import flash.utils.ByteArray;
 	import flash.utils.getDefinitionByName;
+	import flash.utils.getQualifiedSuperclassName;
 	
 	import mx.core.FlexGlobals;
 	import mx.events.ModuleEvent;
@@ -154,8 +155,14 @@ package potomac.bundle
 		private var _enablesForFlags:Array;
 		
 		private var _airBundlesURL:String = "";
+		/**
+		 * If true, bundle caching in the local storage when running in AIR will be disabled.
+		 */
 		public var airDisableCaching:Boolean = true;
 		
+		/**
+		 * @private
+		 */
 		public var potomacPreloader:IPotomacPreloader;
 		private var currentlyInstalling:Boolean = false;
 		
@@ -261,7 +268,7 @@ package potomac.bundle
 				potomacPreloader.dispatchEvent(new BundleEvent(BundleEvent.BUNDLES_INSTALLING));
 			
 			for (i = 0; i < installables.length; i++)
-			{
+			{  
 				var id:String = "";
 				var bundleBaseURL:String = "";
 				var remote:Boolean = false;
@@ -444,17 +451,16 @@ package potomac.bundle
 					break;
 				}
 			}
-			
-			
+			 
 			var className:String = "PotomacAssets_" + id;
 			
 			var assetClass:Class = getDefinitionByName(className) as Class;
 			var assetObject:Object = new assetClass();
 			
 			var newXML:XML = new XML(new assetObject.bundlexml());
-			
+			  
 			if (inAIR() && !airDisableCaching && !bundles[id].attemptingFromCache)
-		    {
+		    { 
 				logger.info("Checking version in cache for " + id);
 		    	bundles[id].useAIRCache = false;
 		    	var fileClass:Class = getDefinitionByName("flash.filesystem.File") as Class;
@@ -468,7 +474,7 @@ package potomac.bundle
 				    fileStream.close();
 				    
 				    var xml:XML = new XML(xmlData);
-
+ 
 				    if (xml.@version == newXML.@version)
 				    {
 						logger.info("Using cached swf for " + id);
@@ -640,12 +646,20 @@ package potomac.bundle
 		 * Returns an array of <code>Extension</code>s of the specified extension point.  If the
 		 * className parameter is passed, it will return only those extensions declared within that
 		 * class.
-		 * 
+		 * <p>
+		 * By default, when the className parameter is specified, only extensions declared directly within
+		 * the specific class are returned.  Extensions declared in the base class or super classes of the
+		 * specified class are not returned.  When <code>true</code> is passed for the superClass argument,
+		 * all extensions declared in the entire class hierarchy are returned.  Importantly, for Potomac to
+		 * be able to inspect the class hierarchy, the class specified must be available in the Flash 
+		 * ApplicationDomain.  In other words, the class's bundle must be loaded.
+		 * </p>
 		 * @param extensionPointID extension point id of the extensions to return.
 		 * @param className name of the class in which the extensions are declared.
+		 * @param superClasses if true, will return extensions declared in super classes.
 		 * @return an array of <code>Extension</code>s. 
 		 */		
-		public function getExtensions(extensionPointID:String,className:String=null):Array
+		public function getExtensions(extensionPointID:String,className:String=null,superClasses:Boolean=false):Array
 		{
 			use namespace potomac;
 			var extensionsForPoint:Array = new Array();
@@ -655,6 +669,27 @@ package potomac.bundle
 				if (Extension(extensions[i]).pointID == extensionPointID && (classNameNorm == null || (extensions[i].className == classNameNorm)))
 				{
 					extensionsForPoint.push(extensions[i]);
+				}
+			}
+			
+			if (className != null && superClasses)
+			{
+				var clz:Class = getDefinitionByName(className) as Class;
+				if (clz == null)
+					throw new Error("Cannot parse class hierarchy when class isn't loaded (e.g. bundle isn't loaded).");
+				
+				classNameNorm = Injector.normalizeClassName(getQualifiedSuperclassName(clz));
+				while (classNameNorm != null && className != "Object")
+				{
+					for (i = 0; i < extensions.length; i++)
+					{
+						if (Extension(extensions[i]).pointID == extensionPointID && (classNameNorm == null || (extensions[i].className == classNameNorm)))
+						{
+							extensionsForPoint.push(extensions[i]);
+						}
+					}				
+
+					classNameNorm = getQualifiedSuperclassName(getDefinitionByName(classNameNorm));
 				}
 			}
             

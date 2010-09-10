@@ -20,175 +20,105 @@ package potomac.inject
 	import potomac.bundle.IBundleService;
 	
 	/**
-	* Dispatched when the injection request is complete.
+	* Dispatched when the injection creation request is complete.
 	*
 	* @eventType potomac.inject.InjectionEvent.INJECTION_READY
 	*/
 	[Event(name="instanceReady", type="potomac.inject.InjectionEvent")]
 
+	/**
+	 * Dispatched when a injection into request is complete.
+	 * 
+	 * @eventType potomac.inject.InjectionEvent.INJECTINTO_COMPLETE
+	 */	
+	[Event(name="injectIntoComplete",type="potomac.inject.InjectionEvent")]
 	
 	/**
 	 * An injection request represent the asynchronous process necessary for the 
 	 * creation and injection of objects in the Potomac bundle system.
+	 * <p>
+	 * When the request is complete, one of either InjectionEvent.INSTANCE_READY 
+	 * or InjectionEvent.INJECTINTO_COMPLETE will be dispatched appropriate to the 
+	 * request.
+	 * </p>
 	 */
 	public dynamic class InjectionRequest extends EventDispatcher
 	{
-		private var _className:String;
-		private var _named:String;
 		private var _injector:Injector;
-		private var _bundleSrv:IBundleService;
-		private var _injectable:Injectable;
 		
-		private var _waitingForBundles:Array = new Array();
-		
-		private var PHASE_START:int = 0;
-		private var PHASE_INJECTABLEBUNDLELOADING:int = 1;
-		private var PHASE_REFERENCEDBUNDLESLOADING:int = 2;
-		private var PHASE_EXTENSIONBUNDLELOADING:int = 3;
-		
-		private var _phase:int = PHASE_START;
-		
-		private var _extension:Extension;
+		private var _getInstanceWorker:GetInstanceWorker;
+		private var _injectIntoWorker:InjectIntoWorker;
 		
 		private var _listeners:Array = new Array();
 				
 		/**
 		 * Callers should not construct InjectionRequests.  InjectionRequests are handed out by the Injector.
 		 */
-		public function InjectionRequest(bundleSrv:IBundleService,injector:Injector,className:String,named:String,extension:Extension)
-		{
-			_className = className;
-			_named = named;
+		public function InjectionRequest(injector:Injector,getInstanceWorker:GetInstanceWorker,injectIntoWorker:InjectIntoWorker)
+		{		
 			_injector = injector;
-			_bundleSrv = bundleSrv;
-			_extension = extension;
+			//we only expect one of these at a time
+			_getInstanceWorker = getInstanceWorker;
+			_injectIntoWorker = injectIntoWorker;
+		}
+		
+		
+		/**
+		 * @private
+		 */
+		internal static function requestGetInstance(bundleSrv:IBundleService,injector:Injector,className:String,named:String,extension:Extension):InjectionRequest
+		{
+			var worker:GetInstanceWorker = new GetInstanceWorker(bundleSrv,injector,className,named,extension);
+			var request:InjectionRequest = new InjectionRequest(injector,worker,null);
+			
+			return request;
 		}
 		
 		/**
-		 * Starts the injection process.   
+		 * @private
+		 */
+		internal static function requestInjectInto(injector:Injector,object:Object):InjectionRequest
+		{
+			var worker:InjectIntoWorker = new InjectIntoWorker(injector,object);
+			var request:InjectionRequest = new InjectionRequest(injector,null,worker);
+			
+			return request;
+		}
+
+		
+		/**
+		 * Starts the injection process (either instance creation and injection or injection only).   
 		 */
 		public function start():void
 		{	
-			_bundleSrv.addEventListener(BundleEvent.BUNDLE_READY,bundleLoaded);
-				
-			if (_extension == null)
-			{	
-				//find injectable
-				_injectable = _injector.getInjectable(_className,_named);
-				
-				if (_injectable != null)
-				{
-					if (_injectable.bundle != null && !_bundleSrv.isBundleLoaded(_injectable.bundle))
-					{
-						_phase = PHASE_INJECTABLEBUNDLELOADING;
-						_waitingForBundles.push(_injectable.bundle);
-						_bundleSrv.loadBundle(_injectable.bundle);
-					}
-					else
-					{
-						afterInjectableBundleLoaded();
-					}
-				}
-				else
-				{
-					//if we find no injectable we must create it w/o it
-					//but this only works if the class is currently in the classloader
-					doGetReferencesAndLoad(_className);			
-				}
-			}
-			else
+			if (_getInstanceWorker != null)
 			{
-				_phase = PHASE_EXTENSIONBUNDLELOADING;
-				_waitingForBundles.push(_extension.bundleID);
-				_bundleSrv.loadBundle(_extension.bundleID);
+				_getInstanceWorker.addEventListener(InjectionEvent.INSTANCE_READY,instanceReady);
+				_getInstanceWorker.start();
 			}
-		}
-		
-		private function bundleLoaded(e:BundleEvent):void
-		{
-			var index:int = ArrayUtil.getItemIndex(e.bundleID,_waitingForBundles);
-			if (index != -1)
+			else if (_injectIntoWorker != null)
 			{
-				_waitingForBundles.splice(index,1);
-			
-				if (_waitingForBundles.length == 0)
-				{
-					if (_phase == PHASE_INJECTABLEBUNDLELOADING)
-					{
-						afterInjectableBundleLoaded();
-					}
-					else if (_phase == PHASE_REFERENCEDBUNDLESLOADING)
-					{
-						afterReferencedBundlesLoaded();
-					}
-					else if (_phase == PHASE_EXTENSIONBUNDLELOADING)
-					{
-						afterExtensionBundleLoaded();
-					}
-				}
+				_injectIntoWorker.addEventListener(InjectionEvent.INJECTINTO_COMPLETE,injectIntoComplete);
+				_injectIntoWorker.start();
 			}
+
 		}
-		
-		private function doGetReferencesAndLoad(className:String):void
-		{
-				try{
-					var clazz:Class = getDefinitionByName(className) as Class;
-				} catch (e:ReferenceError)
-				{
-					throw new Error("Unable to load " + className + ".  Either the class is mispelled, a required bundle is not yet loaded, or the class is an interface class and the injector found no injectables to satisfy it.");
-				}				
-				
-				_injector.fillReferencedBundles(clazz,_waitingForBundles);
-				_phase = PHASE_REFERENCEDBUNDLESLOADING;
-				
-				var loading:Boolean = false;
-				  
-				for (var i:int = 0; i < _waitingForBundles.length; i++)
-				{
-					if (!_bundleSrv.isBundleLoaded(_waitingForBundles[i]))
-					{
-						loading = true;
-						_bundleSrv.loadBundle(_waitingForBundles[i]);
-					}
-					else
-					{
-						//this else statement should fix the 'bundle never loads'
-						//problem when injecting an injectable from a bundle thats
-						//not already loaded
-						_waitingForBundles.splice(i,1);
-						i--;
-					}
-				}
-				if (!loading)
-				{
-					afterReferencedBundlesLoaded();
-				}
-		}
-		
-		private function afterExtensionBundleLoaded():void
-		{
-			doGetReferencesAndLoad(_extension.className);
-		}
-		
-		private function afterInjectableBundleLoaded():void
-		{
-			doGetReferencesAndLoad(_injectable.implementedBy);
-		}
-		
-		private function afterReferencedBundlesLoaded():void
-		{
-			var className:String = _className;
-			if (_extension != null)
-			{
-				className = _extension.className;
-			}
-			_bundleSrv.removeEventListener(BundleEvent.BUNDLE_READY,bundleLoaded);
-						
-			var obj:Object = _injector.getInstanceImmediateByName(className,_named);
+
+		private function injectIntoComplete(event:InjectionEvent):void
+		{	
+			_injectIntoWorker.removeEventListener(InjectionEvent.INJECTINTO_COMPLETE,injectIntoComplete);
 			
-			var injEvent:InjectionEvent = new InjectionEvent(InjectionEvent.INSTANCE_READY,className,_named,_extension,obj);
-			dispatchEvent(injEvent);
+			var postInjectEvent:InjectionEvent = new InjectionEvent(InjectionEvent.POST_INJECTION,null,null,null,event.instance);
+			_injector.sendPostInjectionEvent(postInjectEvent);
 			
+			dispatchEvent(event.clone());
+			removeAllListeners();
+		}
+
+		private function instanceReady(event:InjectionEvent):void
+		{
+			_getInstanceWorker.removeEventListener(InjectionEvent.INSTANCE_READY,instanceReady);
+			dispatchEvent(event.clone());
 			removeAllListeners();
 		}
 		
@@ -210,7 +140,10 @@ package potomac.inject
 			_listeners.splice(_listeners.indexOf(listener),1);
 		}
 		
-		private function removeAllListeners():void
+		/**
+		 * @private
+		 */
+		internal function removeAllListeners():void
 		{
 			var toRemove:Array = new Array().concat(_listeners);
 			for (var i:int = 0; i < toRemove.length; i ++)

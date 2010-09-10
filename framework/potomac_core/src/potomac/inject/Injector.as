@@ -37,7 +37,7 @@ package potomac.inject
 	[ExtensionPointDetails(id="Injectable",attribute="named",description="Unique string which differentiates this binding from others bound to the same type",order="2",common="false")]
 	[ExtensionPointDetails(id="Injectable",attribute="providedBy",description="Fully qualified class that implements IProvider. Providers allow programmatic control of injection class creation",order="3",common="false")]
 	[ExtensionPointDetails(id="Injectable",attribute="singleton",description="If true the injector will only create one implementation instance for this binding",order="4",defaultValue="true")]
-	[ExtensionPointDetails(id="Injectable",attribute="asyncInit",description="Allows the injectable to invoke asynchronous initialization code. Use sparingly!",order="5")]
+	[ExtensionPointDetails(id="Injectable",attribute="asyncInit",description="Allows the injectable to invoke asynchronous initialization code. Use sparingly!",order="5",defaultValue="false",common="false")]
 	
 	[ExtensionPoint(id="Inject",argumentsAsAttributes="true",access="public",
 	                declaredOn="variables,methods,constructors")]
@@ -94,6 +94,24 @@ package potomac.inject
 	 */
 	public class Injector
 	{
+		private static var singletonInstance:Injector;
+		
+		/**
+		 * Returns the global Injector instance.  
+		 * <p>
+		 * This method goes against the design of dependency injection itself but is made available for
+		 * pragmatic reasons.  It is unexpected that developers would mock the Injector itself and so 
+		 * this method is not considered harmful.
+		 * </p> 
+		 */
+		public static function getInstance():Injector
+		{
+			if (singletonInstance == null)
+				throw new Error("Injector must be created before a call to getInstance.");
+			
+			return singletonInstance;
+		}
+		
 		private var _injectables:Array = new Array();
 		private var _manualInjectables:Array = new Array();
 		private var _bundleSrv:IBundleService;
@@ -114,6 +132,8 @@ package potomac.inject
 			
 			bind(IBundleService).toInstance(bundleService);
 			bind(Injector).toInstance(this);
+			
+			singletonInstance = this;
 		}
 		
 		private function onBundlesInstalled(e:BundleEvent):void
@@ -230,7 +250,7 @@ package potomac.inject
 			if (className == null || className == "")
 				throw new ArgumentError();
 				
-			var injRequest:InjectionRequest = new InjectionRequest(_bundleSrv,this,className,named,null);
+			var injRequest:InjectionRequest = InjectionRequest.requestGetInstance(_bundleSrv,this,className,named,null);
 			if (listener != null)
 			{
 				injRequest.addEventListener(InjectionEvent.INSTANCE_READY,listener);
@@ -256,7 +276,7 @@ package potomac.inject
 			if (extension == null)
 				throw new ArgumentError();
 			
-			var injRequest:InjectionRequest = new InjectionRequest(_bundleSrv,this,null,null,extension);
+			var injRequest:InjectionRequest = InjectionRequest.requestGetInstance(_bundleSrv,this,null,null,extension);
 			if (listener != null)
 			{
 				injRequest.addEventListener(InjectionEvent.INSTANCE_READY,listener);
@@ -360,7 +380,8 @@ package potomac.inject
 
 		/**
 		 * Creates an instance (synchronously) of the given injection binding.  This method should be used with caution as it 
-		 * assumes all necessary bundles are loaded to satisfy the injection requests.  
+		 * assumes all necessary bundles are loaded to satisfy the injection requests and that all required [Injectable]s 
+		 * necessary to satisfy the instance's creation do not require asynchronous initialization.  
 		 *  
 		 * @param clazz Class of the injection binding.
 		 * @param named Name attribute of the injection binding.
@@ -392,23 +413,24 @@ package potomac.inject
 			var obj:Object;
 			if (injectable != null)
 			{
-				obj = injectable.getInstance(this);
+				obj = injectable.getInstanceSync(this);
 				if (injectable.needsInjection())
 					injectInto(obj);
 			}
 			else
 			{
-				obj = doCreation(className);
+				obj = doCreationSync(className);
 				injectInto(obj);
 			}		
 			
 			return obj;
 		}
-				
+			
+		
 		/**
 		 * @private
 		 */
-		internal function doCreation(className:String):Object
+		internal function doCreationSync(className:String):Object
 		{
 			var obj:Object; 
 			try{
@@ -418,23 +440,7 @@ package potomac.inject
 				throw new Error("Unable to load " + className + ".  Ensure the class is included in the project's build path.");
 			}
 
-			var constructorExt:Extension;
-			
-			if (_injectionPoints.hasOwnProperty(className))
-			{
-				var injPoints:Array = _injectionPoints[className];
-				for (var i:int = 0; i < injPoints.length; i++)
-				{
-					if (Extension(injPoints[i]).declaredOn == Extension.DECLAREDON_CONSTRUCTOR)
-					{
-						if (constructorExt == null)
-						{
-							constructorExt = injPoints[i];
-							break;
-						}
-					}
-				}	
-			}
+			var constructorExt:Extension = getConstructorInjectionPoint(className);
 			
 			if (constructorExt != null)
 			{
@@ -457,7 +463,34 @@ package potomac.inject
 		}
 		
 		/**
-		 * Injects dependencies into the given object.
+		 * @private
+		 */
+		internal function getConstructorInjectionPoint(className:String):Extension
+		{
+			var constructorExt:Extension;
+			
+			if (_injectionPoints.hasOwnProperty(className))
+			{
+				var injPoints:Array = _injectionPoints[className];
+				for (var i:int = 0; i < injPoints.length; i++)
+				{
+					if (Extension(injPoints[i]).declaredOn == Extension.DECLAREDON_CONSTRUCTOR)
+					{
+						if (constructorExt == null)
+						{
+							constructorExt = injPoints[i];
+							break;
+						}
+					}
+				}	
+			}
+			
+			return constructorExt;
+		}
+		
+		/**
+		 * Injects dependencies into the given object synchronously.  Caution should be used when calling this method as it
+		 * assumes all [Injectable]s required to satisfy the injections do not require asynchronous initialization.
 		 */
 		public function injectInto(object:Object):void
 		{
@@ -493,14 +526,48 @@ package potomac.inject
 			}
 			
 			var event:InjectionEvent = new InjectionEvent(InjectionEvent.POST_INJECTION,null,null,null,object);
-			for (i = 0; i < _listeners.length; i++)
-			{				
-				IEventDispatcher(_listeners[i]).dispatchEvent(event);
-			}			
+			sendPostInjectionEvent(event);		
 		}
 		
+		/**
+		 * @private
+		 */
+		internal function sendPostInjectionEvent(event:InjectionEvent):void
+		{
+			for (var i:int = 0; i < _listeners.length; i++)
+			{				
+				IEventDispatcher(_listeners[i]).dispatchEvent(event);
+			}				
+		}
+
+		/**
+		 * Injects resources into the specified object asynchronously.  Using this asynchronous method is 
+		 * necessary if one or more [Injectable]s that need to be created require asynchronous initialization.
+		 *  
+		 * @param object Object to inject into
+		 * @param listener Listener that is dispatched an InjectionEvent.INJECTINTO_COMPLETE event when injection is complete.
+		 * @return An InjectionRequest token.
+		 */
+		public function injectIntoAsync(object:Object,listener:Function=null):InjectionRequest
+		{
+			if (object == null)
+				throw new ArgumentError();
+			
+
+			var injRequest:InjectionRequest = InjectionRequest.requestInjectInto(this,object);
+			if (listener != null)
+			{
+				injRequest.addEventListener(InjectionEvent.INJECTINTO_COMPLETE,listener);
+				FlexGlobals.topLevelApplication.callLater(injRequest.start);
+			}	
+			
+			return injRequest;		
+		}
 		
-		private function fillInjectionPoints(clazz:Class,injectionPoints:Object):void
+		/**
+		 * @private
+		 */
+		internal function fillInjectionPoints(clazz:Class,injectionPoints:Object):void
 		{
 			var className:String = normalizeClassName(getQualifiedClassName(clazz));
 			
@@ -512,6 +579,7 @@ package potomac.inject
 					var injPoint:Extension = Extension(exts[i]);
 					if (injPoint.declaredOn == Extension.DECLAREDON_CONSTRUCTOR)
 					{
+						//dont add constructor extensions as thats handled specially
 						continue;
 					}
 					else if (injPoint.declaredOn == Extension.DECLAREDON_VARIABLE)
@@ -565,7 +633,10 @@ package potomac.inject
 			return className.replace("::",".");
 		}
 		
-		private function doBigNasty(clazz:Class,args:Array):Object
+		/**
+		 * @private
+		 */
+		internal function doBigNasty(clazz:Class,args:Array):Object
 		{
 			var obj:Object;
 			

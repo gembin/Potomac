@@ -16,7 +16,7 @@
 			[Handles(source="feedsTree",event="change")]
 			public function onTreeSelection(e:ListEvent):void
 			{
-				dispatchEvent(new PartEvent(PartEvent.SELECTION_CHANGED,feedsTree.selectedItems));
+				PartEvent.sendSelectionChanged(this,feedsTree.selectedItems);
 			}
 		]]>
 	</mx:Script>

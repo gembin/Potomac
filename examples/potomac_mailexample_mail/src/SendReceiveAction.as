@@ -2,6 +2,7 @@ package
 {
 	import flash.events.Event;
 	
+	import potomac.core.PotomacDispatcher;
 	import potomac.ui.Action;
 	import potomac.ui.Page;
 	import potomac.ui.PartReference;
@@ -11,7 +12,7 @@ package
 	public class SendReceiveAction extends Action
 	{
 		private var _potomacUI:PotomacUI;
-		
+
 		[Inject]  
 		public function SendReceiveAction(potomacUI:PotomacUI)
 		{
@@ -23,11 +24,8 @@ package
 		{ 
 			var page:Page = _potomacUI.findPage("mailpage");
 			_potomacUI.showPage(page);
-			var partRef:PartReference = page.getFolder("default").findPart("inboxlist");
-			if (partRef.control != null) //truthfully we know this won't be null because the part is the first to be shown/created
-			{
-				partRef.control.dispatchEvent(new Event("sendreceive"));
-			}
+			
+			PotomacDispatcher.getInstance().dispatch("sendreceive");
 		}
 		
 	}

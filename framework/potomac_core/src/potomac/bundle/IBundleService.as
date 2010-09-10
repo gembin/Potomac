@@ -53,12 +53,20 @@ package potomac.bundle
 		 * Returns an array of <code>Extension</code>s of the specified extension point.  If the
 		 * className parameter is passed, it will return only those extensions declared within that
 		 * class.
-		 * 
+		 * <p>
+		 * By default, when the className parameter is specified, only extensions declared directly within
+		 * the specific class are returned.  Extensions declared in the base class or super classes of the
+		 * specified class are not returned.  When <code>true</code> is passed for the superClass argument,
+		 * all extensions declared in the entire class hierarchy are returned.  Importantly, for Potomac to
+		 * be able to inspect the class hierarchy, the class specified must be available in the Flash 
+		 * ApplicationDomain.  In other words, the class's bundle must be loaded.
+		 * </p>
 		 * @param extensionPointID extension point id of the extensions to return.
 		 * @param className name of the class in which the extensions are declared.
+		 * @param superClasses if true, will return extensions declared in super classes.
 		 * @return an array of <code>Extension</code>s. 
-		 */		        
-        function getExtensions(extensionPointID:String,className:String=null):Array
+		 */			        
+        function getExtensions(extensionPointID:String,className:String=null,superClasses:Boolean=false):Array
         
 		/**
 		 * Returns a single <code>Extension</code> with the given id for the given extension point.

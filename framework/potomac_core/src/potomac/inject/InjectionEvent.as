@@ -67,6 +67,27 @@ package potomac.inject
 		*/
 		public static const INSTANCE_READY:String = "instanceReady";
 		
+		/**
+		 * The InjectionEvent.INJECTINTO_COMPLETE constant defines the value of the 
+		 * <code>type</code> property of the event object 
+		 * for a <code>injectIntoComplete</code> event.
+		 *
+		 *  <p>The properties of the event object have the following values:</p>
+		 *  <table class="innertable">
+		 *     <tr><th>Property</th><th>Value</th></tr>
+		 *     <tr><td><code>bubbles</code></td><td>false</td></tr>
+		 *     <tr><td><code>cancelable</code></td><td>false</td></tr>
+		 *     <tr><td><code>currentTarget</code></td><td>The Object that defines the 
+		 *       event listener that handles the event. For example, if you use 
+		 *       <code>myButton.addEventListener()</code> to register an event listener, 
+		 *       myButton is the value of the <code>currentTarget</code>. </td></tr>
+		 *     <tr><td><code>instance</code></td><td>The object whose injections were satisfied.</td></tr>
+		 *  </table>
+		 *
+		 * @eventType injectIntoComplete
+		 */
+		public static const INJECTINTO_COMPLETE:String = "injectIntoComplete";
+		
 		private var _className:String;
 		private var _named:String;
 		private var _extension:Extension;

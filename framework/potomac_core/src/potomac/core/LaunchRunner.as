@@ -25,6 +25,7 @@ package potomac.core
 	 * when the runner's initial startup behavior is complete.  This event tells the 
 	 * Launcher to finalize its startup logic (typically this means bringing down any 
 	 * custom preloaders).
+	 * </p>
 	 */
 	public class LaunchRunner extends EventDispatcher
 	{

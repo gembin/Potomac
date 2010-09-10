@@ -35,6 +35,12 @@
     <classEntry path="potomac.core.LaunchRunner"/>
     <classEntry path="potomac.core.TemplateRunner"/>
     <classEntry path="potomac.bundle.BundleDescriptor"/>
+    <classEntry path="potomac.inject.GetInstanceWorker"/>
+    <classEntry path="potomac.inject.InjectIntoWorker"/>
+    <classEntry path="potomac.inject.InitializedEvent"/>
+    <classEntry path="potomac.inject.InjectionPointWorker"/>
+    <classEntry path="potomac.inject.CreationWorker"/>
+    <classEntry path="potomac.core.PotomacDispatcher"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

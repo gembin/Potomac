@@ -1,7 +1,9 @@
 package
 {
+	import flash.events.EventDispatcher;
+
 	[Injectable(singleton="true")]
-	public class MailDAO
+	public class MailDAO extends EventDispatcher
 	{
 		private var _mailitems:Array;
 		private var _fakeService:FakeService = new FakeService();
