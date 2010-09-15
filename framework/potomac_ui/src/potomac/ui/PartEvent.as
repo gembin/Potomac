@@ -235,11 +235,11 @@ package potomac.ui
 		* The PartEvent.DO_SAVE constant defines the value of the 
 		* <code>type</code> property of the event object 
 		* for a <code>partDoSave</code> event.
-		*<p>
-		 * Do Save events are dispatched by Potomac to parts when the user has requested the 
-		 * part's data be saved.  Parts are expected to initiate (asynchronous) save logic and send back a 
-		 * PartEvent.SAVE_COMPLETE or PartEvent.SAVE_ERROR event.
-		 * </p>
+		* <p>
+		* Do Save events are dispatched by Potomac to parts when the user has requested the 
+		* part's data be saved.  Parts are expected to initiate (asynchronous) save logic and send back a 
+		* PartEvent.SAVE_COMPLETE or PartEvent.SAVE_ERROR event.
+		* </p>
 		*  <p>The properties of the event object have the following values:</p>
 	 	*  <table class="innertable">
 		*     <tr><th>Property</th><th>Value</th></tr>
@@ -261,14 +261,15 @@ package potomac.ui
 		* @eventType partDoSave
 		*/
 		public static const DO_SAVE:String = "partDoSave";
+		
 		/**
 		* The PartEvent.SAVE_COMPLETE constant defines the value of the 
 		* <code>type</code> property of the event object 
 		* for a <code>partSaveComplete</code> event.
-		*<p>
-		 * Save complete events are dispatched by parts to inform Potomac that an
-		 * asynchronous save was successful.  
-		 * </p>
+		* <p>
+		* Save complete events are dispatched by parts to inform Potomac that an
+		* asynchronous save was successful.  
+		* </p>
 		*  <p>The properties of the event object have the following values:</p>
 	 	*  <table class="innertable">
 		*     <tr><th>Property</th><th>Value</th></tr>
