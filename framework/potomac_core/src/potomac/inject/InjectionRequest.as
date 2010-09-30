@@ -108,8 +108,8 @@ package potomac.inject
 		{	
 			_injectIntoWorker.removeEventListener(InjectionEvent.INJECTINTO_COMPLETE,injectIntoComplete);
 			
-			var postInjectEvent:InjectionEvent = new InjectionEvent(InjectionEvent.POST_INJECTION,null,null,null,event.instance);
-			_injector.sendPostInjectionEvent(postInjectEvent);
+//			var postInjectEvent:InjectionEvent = new InjectionEvent(InjectionEvent.POST_INJECTION,null,null,null,event.instance);
+//			_injector.sendPostInjectionEvent(postInjectEvent);
 			
 			dispatchEvent(event.clone());
 			removeAllListeners();

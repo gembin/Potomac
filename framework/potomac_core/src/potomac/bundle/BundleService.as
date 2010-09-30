@@ -868,23 +868,12 @@ package potomac.bundle
 			for (var id:String in bundleLoaders)
 			{
 				if (bundleLoaders[id] == e.target)
-				{					
+				{
 					data = ByteArray(URLLoader(bundleLoaders[id]).data);
 					bundleLoaders[id] = null;
 					delete bundleLoaders[id];
 					break;
 				}
-			}
-			
-			if (inAIR() && !airDisableCaching && String(bundles[id].url).substr(0,12) != "app-storage:")
-		    {
-			    var fileClass:Class = getDefinitionByName("flash.filesystem.File") as Class;
-			    var bundleSWF:Object = fileClass.applicationStorageDirectory.resolvePath("bundles/" + id + "/" + id +".swf");
-			    var fileStreamClass:Class = getDefinitionByName("flash.filesystem.FileStream") as Class;
-			    var fileStream:Object = new fileStreamClass();
-			    fileStream.open(bundleSWF,"write");
-			    fileStream.writeBytes(data);
-			    fileStream.close();
 			}
 
 			bundles[id].moduleData = data;
@@ -906,19 +895,33 @@ package potomac.bundle
 			
             e.target.removeEventListener(Event.COMPLETE,onLoaderComplete);
             e.target.removeEventListener(IOErrorEvent.IO_ERROR,onLoaderError);
-           	handleError(id,e.text);	
+           	handleError(id,e.text);  
 		}
-		
+	    	
 		private function onModuleReady(e:ModuleEvent):void
 		{
 			dontGC.splice(dontGC.indexOf(e.module),1);
 			e.module.removeEventListener(ModuleEvent.READY,onModuleReady);
 			e.module.removeEventListener(ModuleEvent.ERROR,onModuleError);
 			
+			
+			 
 			for (var id:String in bundleModuleInfos)
 			{
 				if (bundleModuleInfos[id] == e.module)
-				{					
+				{				
+					
+					if (inAIR() && !airDisableCaching && String(bundles[id].url).substr(0,12) != "app-storage:")
+					{
+						var fileClass:Class = getDefinitionByName("flash.filesystem.File") as Class;
+						var bundleSWF:Object = fileClass.applicationStorageDirectory.resolvePath("bundles/" + id + "/" + id +".swf");
+						var fileStreamClass:Class = getDefinitionByName("flash.filesystem.FileStream") as Class;
+						var fileStream:Object = new fileStreamClass();
+						fileStream.open(bundleSWF,"write");
+						fileStream.writeBytes(bundles[id].moduleData);
+						fileStream.close();
+					}         
+					                          
 					bundleModuleInfos[id] = null;
 					delete bundleModuleInfos[id];
 					
