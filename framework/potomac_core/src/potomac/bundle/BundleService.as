@@ -106,6 +106,22 @@ package potomac.bundle
 	[Event(name="bundleLoading",type="potomac.bundle.BundleEvent")]
 	
 	/**
+	 * Dispatched before the bundle service starts downloading a resource or asset of
+	 * a bundle.  Currently this is either an assets.swf or the main bundle.swf.
+	 * 
+	 * @eventType potomac.bundle.BundleEvent.PREDOWNLOAD
+	 */
+	[Event(name="predownload",type="potomac.bundle.BundleEvent")]
+	
+	/**
+	 * Dispatched after the bundle service completed downloading a resource or asset of
+	 * a bundle.  Currently this is either an assets.swf or the main bundle.swf.
+	 * 
+	 * @eventType potomac.bundle.BundleEvent.POSTDOWNLOAD
+	 */
+	[Event(name="postdownload",type="potomac.bundle.BundleEvent")]
+	
+	/**
 	 * The BundleService is responsible for loading and managing bundles.  It is also the source for 
 	 * all bundle metadata extensions. 
 	 * 
@@ -113,7 +129,7 @@ package potomac.bundle
 	 */
 	public class BundleService extends EventDispatcher implements IBundleService
 	{
-		private static var ASSETS_FILE:String = "assets.swf";
+		private static const ASSETS_FILE:String = "assets.swf";
 		
 		//URL where the main application SWF is loaded from.  Used to calculate relative locations
 		//of bundle assets
@@ -122,7 +138,7 @@ package potomac.bundle
 		//bundles is a dynamic collection where the properties are the bundle ids
 		//and the values are other dynamic objects whose properties include 'moduleLoaded',
 		//'bundleLoaded','moduleLoading','moduleDataLoading','requiredBundles','activatorName','activator', and temporarily 'bundleXML'.
-		//also 'version','useAIRCache','moduleData'(temporary),'baseURL','url','assetURL'
+		//also 'version','useAIRCache','moduleData'(temporary),'baseURL','url','assetURL','bundleSWFURL'
 		private var bundles:Object = new Object();
 		
 		//A simple array that holds objects that we don't want to be garbage collected until we're
@@ -341,7 +357,13 @@ package potomac.bundle
 
 				bundles[id].assetURL = url;
 				bundles[id].baseURL = bundleBaseURL;
-			    loader.load(new URLRequest(url));
+				
+				var request:URLRequest = new URLRequest(url);
+				
+				var downloadEvent:BundleEvent = new BundleEvent(BundleEvent.PREDOWNLOAD,id,false,url,0,0,null,loader,request);
+				dispatchEvent(downloadEvent);
+				
+			    loader.load(request);
 			}				
 		}
 
@@ -413,6 +435,9 @@ package potomac.bundle
 					break;
 				}
 			}
+			
+			var downloadEvent:BundleEvent = new BundleEvent(BundleEvent.POSTDOWNLOAD,id,false,bundles[id].assetURL,0,0,null,loader,null);
+			dispatchEvent(downloadEvent);
 			
 			var byteLoader:Loader = new Loader();
 			byteLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR,onBundleAssetBytesLoadError);
@@ -691,7 +716,7 @@ package potomac.bundle
 
 					classNameNorm = getQualifiedSuperclassName(getDefinitionByName(classNameNorm));
 				}
-			}
+			}    
             
 			return extensionsForPoint;
 		}
@@ -842,6 +867,8 @@ package potomac.bundle
 		
 		private function loadModule(bundle:String, url:String):void
 		{
+			bundles[bundle].bundleSWFURL = url;
+			
 			var event:BundleEvent = new BundleEvent(BundleEvent.BUNDLE_LOADING,bundle,false,url);
 			dispatchEvent(event);
 			if (potomacPreloader != null)
@@ -857,7 +884,15 @@ package potomac.bundle
 			setModuleDataLoading(bundle);
 			bundles[bundle].url = url;
 			logger.info("Loading bundle swf: "+ url);
-			loader.load(new URLRequest(url));		
+			
+			var request:URLRequest = new URLRequest(url);
+			
+			var downloadEvent:BundleEvent = new BundleEvent(BundleEvent.PREDOWNLOAD,bundle,false,url,0,0,null,loader,request);
+			dispatchEvent(downloadEvent);
+			
+			loader.load(request);		
+			
+			
 		}
 
 		
@@ -877,6 +912,9 @@ package potomac.bundle
 			}
 
 			bundles[id].moduleData = data;
+			
+			var downloadEvent:BundleEvent = new BundleEvent(BundleEvent.POSTDOWNLOAD,id,false,bundles[id].bundleSWFURL,0,0,null,URLLoader(e.target),null);
+			dispatchEvent(downloadEvent);
 			
 			checkSatifisfiedBundles();	
 		}

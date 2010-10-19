@@ -11,6 +11,8 @@
 package potomac.bundle
 {
 	import flash.events.Event;
+	import flash.net.URLLoader;
+	import flash.net.URLRequest;
 	
 	/**
 	 * BundleEvent represents events in response to bundle activities on the <code>BundleService</code>.
@@ -39,6 +41,8 @@ package potomac.bundle
 		 *     <tr><td><code>bytesLoaded</code></td><td>0</td></tr>
 		 *     <tr><td><code>bytesTotal</code></td><td>0</td></tr>
 		 *     <tr><td><code>message</code></td><td>null</td></tr>
+		 *     <tr><td><code>loader</code></td><td>null</td></tr>
+		 *     <tr><td><code>request</code></td><td>null</td></tr> 
 		 *  </table>
 		 *
 		 * @eventType bundlesInstalling
@@ -65,6 +69,8 @@ package potomac.bundle
 		 *     <tr><td><code>bytesLoaded</code></td><td>0</td></tr>
 		 *     <tr><td><code>bytesTotal</code></td><td>0</td></tr>
 		 *     <tr><td><code>message</code></td><td>null</td></tr>
+		 *     <tr><td><code>loader</code></td><td>null</td></tr>
+		 *     <tr><td><code>request</code></td><td>null</td></tr> 
 		 *  </table>
 		 *
 		 * @eventType bundlesPreloading
@@ -91,6 +97,8 @@ package potomac.bundle
 		*     <tr><td><code>bytesLoaded</code></td><td>0</td></tr>
 		*     <tr><td><code>bytesTotal</code></td><td>0</td></tr>
 		*     <tr><td><code>message</code></td><td>null</td></tr>
+		 *     <tr><td><code>loader</code></td><td>null</td></tr>
+		 *     <tr><td><code>request</code></td><td>null</td></tr> 
 	 	*  </table>
 		*
 		* @eventType bundlesInstalled
@@ -117,6 +125,8 @@ package potomac.bundle
 		*     <tr><td><code>bytesLoaded</code></td><td>0</td></tr>
 		*     <tr><td><code>bytesTotal</code></td><td>0</td></tr>
 		*     <tr><td><code>message</code></td><td>null</td></tr>
+		 *     <tr><td><code>loader</code></td><td>null</td></tr>
+		 *     <tr><td><code>request</code></td><td>null</td></tr> 
 	 	*  </table>
 		*
 		* @eventType bundleReady
@@ -143,6 +153,8 @@ package potomac.bundle
 		 *     <tr><td><code>bytesLoaded</code></td><td>The current bytes loaded.</td></tr>
 		 *     <tr><td><code>bytesTotal</code></td><td>Total bytes of downloading asset or SWF.</td></tr>
 		 *     <tr><td><code>message</code></td><td>null</td></tr>
+		 *     <tr><td><code>loader</code></td><td>null</td></tr>
+		 *     <tr><td><code>request</code></td><td>null</td></tr> 
 		 *  </table>
 		 *
 		 * @eventType bundleProgress
@@ -169,6 +181,8 @@ package potomac.bundle
 		 *     <tr><td><code>bytesLoaded</code></td><td>0</td></tr>
 		 *     <tr><td><code>bytesTotal</code></td><td>0</td></tr>
 		 *     <tr><td><code>message</code></td><td>null</td></tr>
+		 *     <tr><td><code>loader</code></td><td>null</td></tr>
+		 *     <tr><td><code>request</code></td><td>null</td></tr> 
 		 *  </table>
 		 *
 		 * @eventType bundleLoading
@@ -195,11 +209,69 @@ package potomac.bundle
 		 *     <tr><td><code>bytesLoaded</code></td><td>0</td></tr>
 		 *     <tr><td><code>bytesTotal</code></td><td>0</td></tr>
 		 *     <tr><td><code>message</code></td><td>The error message.</td></tr>
+		 *     <tr><td><code>loader</code></td><td>null</td></tr>
+		 *     <tr><td><code>request</code></td><td>null</td></tr> 
 		 *  </table>
 		 *
 		 * @eventType bundleError
 		 */
 		public static const BUNDLE_ERROR:String = "bundleError";
+		
+		/**
+		 * The BundleEvent.PREDOWNLOAD constant defines the value of the 
+		 * <code>type</code> property of the event object 
+		 * for a <code>predownload</code> event.
+		 *
+		 *  <p>The properties of the event object have the following values:</p>
+		 *  <table class="innertable">
+		 *     <tr><th>Property</th><th>Value</th></tr>
+		 *     <tr><td><code>bubbles</code></td><td>false</td></tr>
+		 *     <tr><td><code>cancelable</code></td><td>false</td></tr>
+		 *     <tr><td><code>currentTarget</code></td><td>The Object that defines the 
+		 *       event listener that handles the event. For example, if you use 
+		 *       <code>myButton.addEventListener()</code> to register an event listener, 
+		 *       myButton is the value of the <code>currentTarget</code>. </td></tr>
+		 *     <tr><td><code>bundleID</code></td><td>The id of the bundle who's file is being downloaded.</td></tr>
+		 *     <tr><td><code>isRepeat</code></td><td>false</td></tr>
+		 *     <tr><td><code>url</code></td><td>URL of the file being downloaded.</td></tr>
+		 *     <tr><td><code>bytesLoaded</code></td><td>0</td></tr>
+		 *     <tr><td><code>bytesTotal</code></td><td>0</td></tr>
+		 *     <tr><td><code>message</code></td><td>null</td></tr>
+		 *     <tr><td><code>loader</code></td><td>URLLoader of the download.</td></tr>
+		 *     <tr><td><code>request</code></td><td>Populated URLRequest of the download.</td></tr> 
+		 *  </table>
+		 *
+		 * @eventType predownload
+		 */
+		public static const PREDOWNLOAD:String = "predownload";
+		
+		/**
+		 * The BundleEvent.POSTDOWNLOAD constant defines the value of the 
+		 * <code>type</code> property of the event object 
+		 * for a <code>postdownload</code> event.
+		 *
+		 *  <p>The properties of the event object have the following values:</p>
+		 *  <table class="innertable">
+		 *     <tr><th>Property</th><th>Value</th></tr>
+		 *     <tr><td><code>bubbles</code></td><td>false</td></tr>
+		 *     <tr><td><code>cancelable</code></td><td>false</td></tr>
+		 *     <tr><td><code>currentTarget</code></td><td>The Object that defines the 
+		 *       event listener that handles the event. For example, if you use 
+		 *       <code>myButton.addEventListener()</code> to register an event listener, 
+		 *       myButton is the value of the <code>currentTarget</code>. </td></tr>
+		 *     <tr><td><code>bundleID</code></td><td>The id of the bundle who's file is being downloaded.</td></tr>
+		 *     <tr><td><code>isRepeat</code></td><td>false</td></tr>
+		 *     <tr><td><code>url</code></td><td>URL of the file being downloaded.</td></tr>
+		 *     <tr><td><code>bytesLoaded</code></td><td>0</td></tr>
+		 *     <tr><td><code>bytesTotal</code></td><td>0</td></tr>
+		 *     <tr><td><code>message</code></td><td>null</td></tr>
+		 *     <tr><td><code>loader</code></td><td>URLLoader of the download.</td></tr>
+		 *     <tr><td><code>request</code></td><td>Populated URLRequest of the download.</td></tr> 
+		 *  </table>
+		 *
+		 * @eventType postdownload
+		 */
+		public static const POSTDOWNLOAD:String = "postdownload";
 		
 		private var _bundleID:String;
 		private var _repeat:Boolean; //means the event is a repeat
@@ -207,12 +279,14 @@ package potomac.bundle
 		private var _bytesLoaded:uint;
 		private var _bytesTotal:uint;
 		private var _message:String;
+		private var _loader:URLLoader;
+		private var _request:URLRequest;
 		
 		
 		/**
 		 * Callers should not construct instances of BundleEvent.
 		 */		
-		public function BundleEvent(type:String,bundleID:String=null,repeat:Boolean=false,url:String=null,bytesLoaded:uint=0,bytesTotal:uint=0,message:String=null)
+		public function BundleEvent(type:String,bundleID:String=null,repeat:Boolean=false,url:String=null,bytesLoaded:uint=0,bytesTotal:uint=0,message:String=null,loader:URLLoader=null,request:URLRequest=null)
 		{
 			super(type);
 			_bundleID=bundleID;
@@ -221,6 +295,8 @@ package potomac.bundle
 			_bytesLoaded = bytesLoaded;
 			_bytesTotal = bytesTotal;
 			_message = message;
+			_loader = loader;
+			_request = request;
 		}
 		
 
@@ -275,6 +351,21 @@ package potomac.bundle
 			return _message;
 		}
 
+		/**
+		 * The URLLoader associated with a download event.
+		 */
+		public function get loader():URLLoader
+		{
+			return _loader;
+		}
+		
+		/**
+		 * The URLRequest associated with a download event.
+		 */
+		public function get request():URLRequest
+		{
+			return _request;
+		}
 		
 		/**
 		 * @inheritDoc
@@ -283,6 +374,10 @@ package potomac.bundle
 		{
 			return new BundleEvent(type,_bundleID,_repeat,_url,_bytesLoaded,_bytesTotal,_message);
 		}
+
+
+
+
 
 	}
 }
