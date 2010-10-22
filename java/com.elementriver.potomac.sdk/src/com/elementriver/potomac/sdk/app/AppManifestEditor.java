@@ -12,7 +12,6 @@ package com.elementriver.potomac.sdk.app;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import org.eclipse.core.resources.IFile;
@@ -74,16 +73,11 @@ import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
-import com.adobe.flexbuilder.codemodel.common.CMFactory;
-import com.adobe.flexbuilder.project.IClassPathEntry;
-import com.adobe.flexbuilder.project.actionscript.ActionScriptCore;
-import com.adobe.flexbuilder.project.actionscript.IActionScriptProject;
-import com.adobe.flexbuilder.project.actionscript.internal.ActionScriptProjectSettings;
 import com.elementriver.potomac.sdk.Potomac;
-import com.elementriver.potomac.sdk.UpdateBuildPathJob;
-import com.elementriver.potomac.sdk.bundles.BundleModel;
-import com.elementriver.potomac.sdk.bundles.BundleModelManager;
+import com.elementriver.potomac.sdk.bundles.PluginBundleModelManager;
 import com.elementriver.potomac.sdk.bundles.PotomacBundleBuilder;
+import com.elementriver.potomac.shared.BundleModel;
+import com.elementriver.potomac.shared.ManifestModel;
 
 public class AppManifestEditor extends MultiPageEditorPart {
 
@@ -91,7 +85,7 @@ public class AppManifestEditor extends MultiPageEditorPart {
 	
 	private IFile appManifest;
 	
-	private ManifestModel model;
+	private PluginManifestModel model;
 	
 	private ArrayList<String> dependencies = new ArrayList<String>();
 	private ArrayList<String> preloads = new ArrayList<String>();
@@ -771,7 +765,7 @@ public class AppManifestEditor extends MultiPageEditorPart {
 			setPartName(appManifest.getFullPath().toString().substring(1));	
 		}		
 		
-		model = new ManifestModel(appManifest);
+		model = new PluginManifestModel(appManifest);
 		
 		resourceListener = new IResourceChangeListener() {
 			public void resourceChanged(IResourceChangeEvent event) {
@@ -928,7 +922,7 @@ public class AppManifestEditor extends MultiPageEditorPart {
 		for(String bundle : dependencies)
 		{
 			try {
-				BundleModel model = BundleModelManager.getInstance().getModel(bundle);
+				BundleModel model = PluginBundleModelManager.getInstance().getModel(bundle);
 				for (HashMap<String,String> ext : model.extensions)
 				{
 					if (ext.get("point").equals("Template"))

@@ -8,13 +8,10 @@
  *  Contributors:
  *     ElementRiver, LLC. - initial API and implementation
  *******************************************************************************/
-package com.elementriver.potomac.sdk.app;
+package com.elementriver.potomac.shared;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -22,18 +19,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.PlatformUI;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.elementriver.potomac.sdk.bundles.BundleModel;
-import com.elementriver.potomac.sdk.bundles.BundleModelManager;
-
-public class ManifestModel {
+public abstract class ManifestModel {
 	
 	public ArrayList<String> bundles = new ArrayList<String>();
 	
@@ -49,15 +39,17 @@ public class ManifestModel {
 	public String airBundlesURL = "";
 	
 	public Boolean airDisableCaching = false;
+	
+	protected abstract BundleModelManager getBundleModelManager();
 
-	public ManifestModel(IFile manifest)
+	protected void populate(File manifest)
 	{		
 		if (manifest == null || !manifest.exists())
 		{
 			return; 
 		}
-		
-		File file = manifest.getLocation().toFile();
+	
+		File file = manifest;
 		
 		try {
 			SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
@@ -140,7 +132,7 @@ public class ManifestModel {
 		
 	}
 	
-	public void save(IFile manifest)
+	public String getManifestXML()
 	{
 		String newline = System.getProperty("line.separator");
 		String xml = "";
@@ -185,28 +177,7 @@ public class ManifestModel {
 		xml += "</application>";
 		
 		
-		InputStream is = null;
-		try {
-			is = new ByteArrayInputStream(xml.getBytes("UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		try {
-			if (manifest.exists())
-			{
-				manifest.setContents(is, true,true, null);
-			}
-			else
-			{
-				manifest.create(is, true,null);
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-			MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Error Writing appManifest.xml", "Unable to write appManifest.xml.");
-		}
-		
+		return xml;
 	}
 	
 	public HashMap<String,String> getTemplateParameters(String templateID,ArrayList<String> dependencies)
@@ -217,7 +188,7 @@ public class ManifestModel {
 		for(String bundle : dependencies)
 		{
 			try {
-				BundleModel model = BundleModelManager.getInstance().getModel(bundle);
+				BundleModel model = getBundleModelManager().getModel(bundle);
 				for (HashMap<String,String> ext : model.extensions)
 				{
 					if (ext.get("point").equals("Template") && ext.get("id").equals(templateID))

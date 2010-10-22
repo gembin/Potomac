@@ -82,7 +82,7 @@ public class AddBundleNatureAction implements IObjectActionDelegate {
 			
 			if (!project.getFile("bundle.xml").exists())
 			{
-				BundleModelManager.getInstance().createAndSaveModel(project.getName());
+				PluginBundleModelManager.getInstance().createAndSaveModel(project.getName());
 			}
 		} catch (CoreException e) {
 			e.printStackTrace();

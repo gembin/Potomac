@@ -18,9 +18,12 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DynamicConfigurator;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
+import org.potomacframework.build.extensionproc.AntBundleModelManager;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import com.elementriver.potomac.shared.BundleModel;
 
 import flex2.tools.oem.Application;
 import flex2.tools.oem.Configuration;
@@ -31,7 +34,7 @@ import flex2.tools.oem.VirtualLocalFileSystem;
 
 public class BundleTask extends Task implements DynamicConfigurator {
 	
-	private static ArrayList<BundleModel> bundleModels = new ArrayList<BundleModel>();
+	public static AntBundleModelManager bundleModelManager;
 	
 	private static Path workspacePath;
 	private static Path targetPlatformPath;
@@ -40,122 +43,7 @@ public class BundleTask extends Task implements DynamicConfigurator {
 	
 	public static String currentBundleDirectory = "";
 	public static String currentBundle = "";
-	
-	public static BundleModel getModel(String bundle)
-	{
-//		if (verbose)
-//			System.out.println("Retrieving Bundle Model for '"+bundle+"'.");
-		
-		for (BundleModel model : bundleModels)
-		{
-			if (model.id.equals(bundle))
-				return model;
-		}
-		
-		if (verbose)
-			System.out.println("Bundle model not cached, loading from bundle.xml.");
 
-		File bundlexml = new File(workspacePath.toString() + "/" + bundle + "/bundle.xml");
-		if (!bundlexml.exists())
-		{
-			bundlexml = new File(targetPlatformPath.toString() + "/" + bundle + "/bundle.xml");
-		}
-		
-		if (verbose)
-			System.out.println("Loading bundle.xml: " + bundlexml.toString());
-		
-		if (!bundlexml.exists())
-		{
-			if (verbose)
-				System.out.println("File not found.");
-			return null;
-		}
-		
-		BundleModel model = loadBundleModel(bundlexml);
-		
-		bundleModels.add(model);
-		
-		return model;
-	}
-	
-	private static BundleModel loadBundleModel(File bundlexml)
-	{
-		final BundleModel model = new BundleModel();		
-		
-		try {
-			SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-			
-			parser.parse(bundlexml,new DefaultHandler() {
-				
-				boolean inDependencies = false;
-				boolean inBundle = false;
-				
-				public void startElement(String uri, String localName, String name,
-						Attributes attributes) throws SAXException {
-					if (name.equals("bundle"))
-					{
-						inBundle = true;
-						if (!inDependencies)
-						{
-							model.id = attributes.getValue("id");
-							model.name = attributes.getValue("name");
-							model.activator = attributes.getValue("activator");
-							model.version = attributes.getValue("version");
-						}
-					}
-					if (name.equals("requiredBundles"))
-					{
-						inDependencies = true;
-					}
-					if (name.equals("extensionPoint"))
-					{
-						HashMap<String,String> extPt = new HashMap<String,String>();
-						for (int i = 0; i < attributes.getLength(); i++) {
-							extPt.put(attributes.getQName(i),attributes.getValue(i));
-						}
-						model.extensionPoints.add(extPt);
-					}
-					if (name.equals("extension"))
-					{
-						HashMap<String,String> ext = new HashMap<String,String>();
-						for (int i = 0; i < attributes.getLength(); i++) {
-							ext.put(attributes.getQName(i),attributes.getValue(i));
-						}
-						model.extensions.add(ext);						
-					}
-				}
-
-				public void endElement(String uri, String localName, String name)
-						throws SAXException {
-					if (name.equals("requiredBundles"))
-					{
-						inDependencies = false;
-					}
-					if (name.equals("bundle"))
-					{
-						inBundle = false;
-					}
-				}
-
-				public void characters(char[] ch, int start, int length)
-						throws SAXException {
-					if (inDependencies && inBundle && new String(ch,start,length).trim().length() > 0)
-					{
-						model.dependencies.add(new String(ch,start,length).trim());
-					}
-				}
-								
-			});
-		} catch (ParserConfigurationException e) {
-			throw new BuildException(e);
-		} catch (SAXException e) {
-			throw new BuildException(e);
-		} catch (IOException e) {
-			throw new BuildException(e);
-		}
-		
-		return model;
-	}
 	
 	public static boolean isVerbose()
 	{
@@ -268,6 +156,9 @@ public class BundleTask extends Task implements DynamicConfigurator {
 		
 		currentBundleDirectory = workspacePath.toString() + "/" + id;
 		currentBundle = id;
+		
+		if (bundleModelManager == null)
+			bundleModelManager = new AntBundleModelManager(workspacePath, targetPlatformPath, verbose);
 
 		//*******************************BUILD SWC********************************************
 		Library bundleLib = new Library();
@@ -388,13 +279,13 @@ public class BundleTask extends Task implements DynamicConfigurator {
 		
 		File outputBundleXML = new File(outputPath.toString() + "/" + id + "/bundle.xml");
 		
-		BundleModel model = getModel(id);
+		BundleModel model = bundleModelManager.getModel(id);
 		
 		if (bundleVersion != null)
 			model.version = bundleVersion;
 		
 		try {
-			BundleModelManager.saveModel(model, outputBundleXML);
+			bundleModelManager.saveModel(model, outputBundleXML);
 		} catch (IOException e) {
 			throw new BuildException(e);
 		}
@@ -477,14 +368,16 @@ public class BundleTask extends Task implements DynamicConfigurator {
 		Application assetApp = new Application(assetsVF);
 		Configuration assetsConfig = assetApp.getDefaultConfiguration();
 		
+
 		//force the assets.swf compile to use the base config
 		assetsConfig.setConfiguration(new File(sdkPath.toString() + "/frameworks/flex-config.xml"));
+		assetsConfig.setLocalFontSnapshot(new File(sdkPath.toString()+"/frameworks","localFonts.ser"));
 
-		
 		assetsConfig.addExternalLibraryPath(new File[]{new File(sdkPath.toString() + "/frameworks/libs/flex.swc")});
 		assetsConfig.setLibraryPath(new File[]{});
 		assetsConfig.setLocale(new String[]{});
 		assetsConfig.setRuntimeSharedLibraries(new String[]{});
+		assetsConfig.setRuntimeSharedLibraryPath("", new String[]{}, new String[]{});
 		
 		assetApp.setConfiguration(assetsConfig);
 		
@@ -574,7 +467,7 @@ public class BundleTask extends Task implements DynamicConfigurator {
 		if (!bundlexml.exists())
 			throw new BuildException("Could not find bundle.xml in '" + id + "'.");
 		
-		BundleModel bundleModel = getModel(id);
+		BundleModel bundleModel = bundleModelManager.getModel(id);
 
 		for (String dependency : bundleModel.dependencies)
 		{

@@ -13,6 +13,7 @@ import org.potomacframework.build.extensionproc.AntFunction;
 import org.potomacframework.build.extensionproc.AntType;
 import org.potomacframework.build.extensionproc.AntVariable;
 
+import com.elementriver.potomac.shared.BundleModel;
 import com.elementriver.potomac.shared.ExtensionsMetadataProcessor;
 import com.elementriver.potomac.shared.PDefinition;
 import com.elementriver.potomac.shared.PFunction;
@@ -99,7 +100,7 @@ public class CompilerExtension implements IPreLinkExtension
 				}
 			});
 	    	
-	    	final BundleModel model = BundleTask.getModel(BundleTask.currentBundle);
+	    	final BundleModel model = BundleTask.bundleModelManager.getModel(BundleTask.currentBundle);
 	    	model.extensionPoints = extensionPoints;
 	    	
 	    	if (BundleTask.isVerbose())
@@ -114,7 +115,7 @@ public class CompilerExtension implements IPreLinkExtension
 	    	//to be missing its exts and ext pts (since we're reading the root bundle.xml and not the /bin/bundle.xml
 	    	for (String depend : model.dependencies)
 	    	{
-	    		allExtPts.addAll(BundleTask.getModel(depend).extensionPoints);
+	    		allExtPts.addAll(BundleTask.bundleModelManager.getModel(depend).extensionPoints);
 	    	}
 	    	
 	    	

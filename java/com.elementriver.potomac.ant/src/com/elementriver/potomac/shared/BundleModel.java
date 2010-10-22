@@ -8,7 +8,7 @@
  *  Contributors:
  *     ElementRiver, LLC. - initial API and implementation
  *******************************************************************************/
-package com.elementriver.potomac.sdk.bundles;
+package com.elementriver.potomac.shared;
 
 import java.util.ArrayList;
 import java.util.HashMap;

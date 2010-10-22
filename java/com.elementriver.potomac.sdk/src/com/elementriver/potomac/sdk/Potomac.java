@@ -247,34 +247,36 @@ public class Potomac {
 				
 				ArrayList<IClassPathEntry> libraryPaths = null;
 				
-				synchronized (CMFactory.getLockObject())
-				{					
-					IActionScriptProject proj = ActionScriptCore.getProject(project);
-					
-					flexProjectSettings = ( ActionScriptProjectSettings ) proj.getProjectSettings();
-					libraryPaths = new ArrayList<IClassPathEntry>(Arrays.asList(flexProjectSettings.getLibraryPath()));
+				IActionScriptProject proj = ActionScriptCore.getProject(project);
+							
+				flexProjectSettings = ( ActionScriptProjectSettings ) proj.getProjectSettings();
+				libraryPaths = new ArrayList<IClassPathEntry>(Arrays.asList(flexProjectSettings.getLibraryPath()));
 
-					for (IClassPathEntry entry : libraryPaths)
-					{
-						if (entry.getKind() != IClassPathEntry.KIND_LIBRARY_FILE)
-							continue;
-						
-						//check to see if this entry is a reference to a bundle
-						for (String bundle : bundlesInPath)
-						{
-							if (entry.getValue().contains("/"+bundle+"/"))
-							{
-								//if it is a bundle reference, update its path
-								String swcPath = Potomac.getSWCPath(bundle);	
-								entry.setValue(swcPath);
-								break;
-							}
-						}				
-					}
+				for (IClassPathEntry entry : libraryPaths)
+				{
+					if (entry.getKind() != IClassPathEntry.KIND_LIBRARY_FILE)
+						continue;
 					
-					//flexProjectSettings.saveDescription(bundlexml.getProject(), new NullProgressMonitor());
-		   	 	}
+					//check to see if this entry is a reference to a bundle
+					for (String bundle : bundlesInPath)
+					{
+						if (entry.getValue().contains("/"+bundle+"/"))
+						{
+							//if it is a bundle reference, update its path
+							String swcPath = Potomac.getSWCPath(bundle);	
+							entry.setValue(swcPath);
+							break;
+						}
+					}				
+				}	
+
 				flexProjectSettings.setLibraryPath( libraryPaths.toArray( new IClassPathEntry[ libraryPaths.size() ] ) );
+				try
+				{
+					proj.setProjectDescription(flexProjectSettings, new NullProgressMonitor());
+				} catch (CoreException e)
+				{
+				}
 				
 				UpdateBuildPathJob job = new UpdateBuildPathJob();
 				job.project = project;
@@ -386,8 +388,8 @@ public class Potomac {
 				ArrayList<IDefinition> defs2 = getAllDefinitionsInFolder(member,project);
 				for (IDefinition def : defs2)
 				{
-					if (!defs2.contains(def))
-						defs2.add(def);
+					if (!defs.contains(def))
+						defs.add(def);
 				}
 			}
 		}

@@ -26,6 +26,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -89,6 +90,8 @@ import com.adobe.flexbuilder.project.actionscript.internal.ActionScriptProjectSe
 import com.elementriver.potomac.sdk.Activator;
 import com.elementriver.potomac.sdk.Potomac;
 import com.elementriver.potomac.sdk.UpdateBuildPathJob;
+import com.elementriver.potomac.shared.BundleModel;
+import com.elementriver.potomac.shared.BundleModelManager;
 
 public class BundleXMLEditor extends MultiPageEditorPart implements IResourceChangeListener, Listener{
 
@@ -644,7 +647,7 @@ public class BundleXMLEditor extends MultiPageEditorPart implements IResourceCha
 			}
 			public Object[] getChildren(Object parentElement) {
 				if (!(parentElement instanceof String)) return null;
-				BundleModel model = BundleModelManager.getInstance().getModel((String) parentElement);
+				BundleModel model = PluginBundleModelManager.getInstance().getModel((String) parentElement);
 				return model.extensionPoints.toArray();
 			}
 			public Object getParent(Object element) {
@@ -882,7 +885,7 @@ public class BundleXMLEditor extends MultiPageEditorPart implements IResourceCha
 
 	public void dispose() {
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-		BundleModelManager.getInstance().removeListener(this);
+		PluginBundleModelManager.getInstance().removeListener(this);
 		super.dispose();
 	}
 
@@ -899,57 +902,61 @@ public class BundleXMLEditor extends MultiPageEditorPart implements IResourceCha
 			CMFactory.getRegistrar().registerProject(bundlexml.getProject(),null);
 		}
 		
-		synchronized (CMFactory.getLockObject())
-   	 	{	
-			IActionScriptProject proj = ActionScriptCore.getProject(bundlexml);
-			
-			flexProjectSettings = ( ActionScriptProjectSettings ) proj.getProjectSettings();
-			ArrayList<IClassPathEntry> libraryPaths = new ArrayList<IClassPathEntry>(Arrays.asList(flexProjectSettings.getLibraryPath()));
+		IActionScriptProject proj = ActionScriptCore.getProject(bundlexml);
+		
+		flexProjectSettings = ( ActionScriptProjectSettings ) proj.getProjectSettings();
+		ArrayList<IClassPathEntry> libraryPaths = new ArrayList<IClassPathEntry>(Arrays.asList(flexProjectSettings.getLibraryPath()));
 
-			
-			//remove older entries
-			for (Iterator iterator = model.dependencies.iterator(); iterator.hasNext();) {
-				String dependency = (String) iterator.next();
-				if (!dependencies.contains(dependency))
-				{
-					//remove it
-					for (Iterator iterator2 = libraryPaths.iterator(); iterator2.hasNext();) {
-						IClassPathEntry classPathEntry = (IClassPathEntry) iterator2.next();
-						if (classPathEntry.getKind() != IClassPathEntry.KIND_LIBRARY_FILE)
-							continue;
-						
-						String name = classPathEntry.getValue();			
-						if (name.contains(dependency + ".swc"))
-						{
-							libraryPaths.remove(classPathEntry);
-							break;
-						}
+		
+		//remove older entries
+		for (Iterator iterator = model.dependencies.iterator(); iterator.hasNext();) {
+			String dependency = (String) iterator.next();
+			if (!dependencies.contains(dependency))
+			{
+				//remove it
+				for (Iterator iterator2 = libraryPaths.iterator(); iterator2.hasNext();) {
+					IClassPathEntry classPathEntry = (IClassPathEntry) iterator2.next();
+					if (classPathEntry.getKind() != IClassPathEntry.KIND_LIBRARY_FILE)
+						continue;
+					
+					String name = classPathEntry.getValue();			
+					if (name.contains(dependency + ".swc"))
+					{
+						libraryPaths.remove(classPathEntry);
+						break;
 					}
-				}				
-			}
-			
-			//create new entries
-			for (Iterator iterator = dependencies.iterator(); iterator.hasNext();) {
-				String dependency = (String) iterator.next();
-				if (!model.dependencies.contains(dependency))
-				{
-					String swcPath = Potomac.getSWCPath(dependency);
-					IClassPathEntry classPathEntry = ClassPathEntryFactory.newEntry(IClassPathEntry.KIND_LIBRARY_FILE,swcPath, flexProjectSettings );
-					classPathEntry.setLinkType(IClassPathEntry.LINK_TYPE_EXTERNAL);
-					libraryPaths.add( classPathEntry );					
 				}
+			}				
+		}
+		
+		//create new entries
+		for (Iterator iterator = dependencies.iterator(); iterator.hasNext();) {
+			String dependency = (String) iterator.next();
+			if (!model.dependencies.contains(dependency))
+			{
+				String swcPath = Potomac.getSWCPath(dependency);
+				IClassPathEntry classPathEntry = ClassPathEntryFactory.newEntry(IClassPathEntry.KIND_LIBRARY_FILE,swcPath, flexProjectSettings );
+				classPathEntry.setLinkType(IClassPathEntry.LINK_TYPE_EXTERNAL);
+				libraryPaths.add( classPathEntry );					
 			}
-			
-			flexProjectSettings.setLibraryPath( libraryPaths.toArray( new IClassPathEntry[ libraryPaths.size() ] ) );
-			//flexProjectSettings.saveDescription(bundlexml.getProject(), new NullProgressMonitor());
-   	 	}
+		}
+		
+		flexProjectSettings.setLibraryPath( libraryPaths.toArray( new IClassPathEntry[ libraryPaths.size() ] ) );
+		try
+		{
+			proj.setProjectDescription(flexProjectSettings, new NullProgressMonitor());
+		} catch (CoreException e)
+		{
+		}
+		//flexProjectSettings.saveDescription(bundlexml.getProject(), new NullProgressMonitor());
+
 		
 		//set project references (determines build order)
 		ArrayList<IProject> projRefs = new ArrayList<IProject>();
 		for (String depend : dependencies)
 		{
-			IProject proj = ResourcesPlugin.getWorkspace().getRoot().getProject(depend);
-			projRefs.add(proj);
+			IProject eclipseProj = ResourcesPlugin.getWorkspace().getRoot().getProject(depend);
+			projRefs.add(eclipseProj);
 		}
 		try {
 			IProjectDescription projDesc = bundlexml.getProject().getDescription();
@@ -962,7 +969,7 @@ public class BundleXMLEditor extends MultiPageEditorPart implements IResourceCha
 		model.dependencies.clear();
 		model.dependencies.addAll(dependencies);
 		model.dirty = true;
-		BundleModelManager.getInstance().saveModel(model.id,false);
+		PluginBundleModelManager.getInstance().saveModel(model.id,false);
 		dirty = false;
 		firePropertyChange(PROP_DIRTY);		
 		
@@ -988,7 +995,7 @@ public class BundleXMLEditor extends MultiPageEditorPart implements IResourceCha
 			throw new PartInitException("Invalid Input: Must be IFileEditorInput");
 		super.init(site, editorInput);
 		bundlexml = (IFile) editorInput.getAdapter(IResource.class);
-		model = BundleModelManager.getInstance().getModel(bundlexml.getProject().getName());
+		model = PluginBundleModelManager.getInstance().getModel(bundlexml.getProject().getName());
 		
 		readOnly = bundlexml.isReadOnly();
 		
@@ -1001,7 +1008,7 @@ public class BundleXMLEditor extends MultiPageEditorPart implements IResourceCha
 			setPartName(bundlexml.getFullPath().toString().substring(1));	
 		}		
 		
-		BundleModelManager.getInstance().addListener(this);
+		PluginBundleModelManager.getInstance().addListener(this);
 	}
 	/* (non-Javadoc)
 	 * Method declared on IEditorPart.

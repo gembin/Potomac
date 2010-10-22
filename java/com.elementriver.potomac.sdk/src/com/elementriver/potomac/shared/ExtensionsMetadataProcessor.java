@@ -4,9 +4,123 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.potomacframework.build.BundleModel;
-
 public class ExtensionsMetadataProcessor {
+	
+	public static String getAppInitializerSource(ManifestModel model,String projectRoot)
+	{
+		String newline = System.getProperty("line.separator");
+		
+		
+		StringBuilder pInitContents = new StringBuilder();
+		pInitContents.append("package potomac.derived {" + newline);
+		pInitContents.append("   import flash.events.Event;" + newline);
+		pInitContents.append("   import mx.core.FlexGlobals;" + newline);
+		pInitContents.append("   import mx.events.FlexEvent;" + newline);
+		pInitContents.append("   import potomac.core.Launcher;" + newline);
+		pInitContents.append("   import potomac.core.LauncherManifest;" + newline);
+		pInitContents.append("   import potomac.core.TemplateRunner;" + newline);
+		pInitContents.append("   public class PotomacInitializer {" + newline);
+		
+		String bundles = "";
+		String preloads = "";
+		for (String bundle : model.bundles)
+		{
+			bundles += "\"" + bundle + "\",";
+			
+			if (model.preloads.contains(bundle))
+				preloads += "\"" + bundle + "\",";
+		}	
+		
+		if (bundles.endsWith(","))
+			bundles = bundles.substring(0,bundles.length()-1);
+		if (preloads.endsWith(","))
+			preloads = preloads.substring(0,preloads.length()-1);
+					
+		pInitContents.append("      private var bundles:Array = ["+bundles+"];" + newline);
+		pInitContents.append("      private var preloads:Array = ["+preloads+"];" + newline);
+		
+		pInitContents.append("      private var templateID:String = \""+model.templateID+"\";" + newline);
+		pInitContents.append("      private var airBundlesURL:String = \""+model.airBundlesURL+"\";" + newline);
+		pInitContents.append("      private var airDisableCaching:Boolean = "+model.airDisableCaching+";" + newline);
+		
+		String templateDataCode = "";
+		HashMap<String,String> templatePropTypes = model.getTemplateParameters(model.templateID,model.bundles);
+		for (String key : model.templateProperties.keySet())
+		{
+			String type = templatePropTypes.get(key);
+			if (type.equals("image"))
+			{
+				if (model.templateProperties.get(key) != null && model.templateProperties.get(key).trim().length() > 0)
+				{
+					File file = new File(projectRoot + model.templateProperties.get(key));
+					if (file != null && file.exists())
+					{
+						String path = file.getAbsolutePath();
+						path = path.replace('\\','/');
+						pInitContents.append("      [Embed(source=\""+path+"\")]" + newline);
+						pInitContents.append("      private var templateProp_"+key+":Class;" + newline);
+						templateDataCode += key + ":new templateProp_"+key+"(),";
+					}
+				}
+			}
+			else if (type.equals("boolean"))
+			{
+				String val = "false";
+				if (model.templateProperties.get(key) != null && model.templateProperties.get(key).equals("true"))
+					val = "true";
+				templateDataCode += key + ":" + val + ",";
+			}
+			else
+			{
+				String val = "";
+				if (model.templateProperties.get(key) != null)
+					val = model.templateProperties.get(key);
+				templateDataCode += key + ":\"" + val + "\",";
+			}
+		}
+		if (templateDataCode.endsWith(","))
+		{
+			templateDataCode = templateDataCode.substring(0, templateDataCode.length() -1);
+		}
+		pInitContents.append("      private var templateData:Object = {"+templateDataCode+"};" + newline);
+
+		String enableFlags = "";
+		for (String flag : model.enablesForFlags)
+		{
+			enableFlags += "\"" + flag + "\",";
+		}
+		if (enableFlags.endsWith(","))
+			enableFlags = enableFlags.substring(0,enableFlags.length() -1);
+		
+		pInitContents.append("      private var enablesForFlags:Array = ["+enableFlags+"];" + newline);
+		pInitContents.append("      public function PotomacInitializer(){" + newline);
+		pInitContents.append("         FlexGlobals.topLevelApplication.addEventListener(FlexEvent.APPLICATION_COMPLETE,go);" + newline);
+		pInitContents.append("         FlexGlobals.topLevelApplication.addEventListener(FlexEvent.INITIALIZE,init);" + newline);
+		pInitContents.append("      }" + newline);
+		pInitContents.append("      public function init(e:Event):void {" + newline);
+		pInitContents.append("         Launcher.findPreloader();" + newline);
+		pInitContents.append("      }" + newline);
+		
+		
+		pInitContents.append("      public function go(e:Event):void {" + newline);
+		pInitContents.append("         var runner:TemplateRunner = new TemplateRunner(templateID,templateData);" + newline);
+		pInitContents.append("         var manifest:LauncherManifest = new LauncherManifest();" + newline);
+		pInitContents.append("         manifest.bundles = bundles;" + newline);
+		pInitContents.append("         manifest.preloads = preloads;" + newline);
+		pInitContents.append("         manifest.airBundlesURL = airBundlesURL;" + newline);
+		pInitContents.append("         manifest.disableAIRCaching = airDisableCaching;" + newline);
+		pInitContents.append("         manifest.enablesForFlags = enablesForFlags;" + newline);
+		pInitContents.append("         manifest.runner = runner;" + newline);
+		pInitContents.append("         Launcher.launch(manifest);" + newline);
+		pInitContents.append("      }" + newline);
+
+		
+		pInitContents.append("   }" + newline);
+		pInitContents.append("}");
+
+
+		return pInitContents.toString();
+	}
 	
 	public static ArrayList<String> validateExtensionPoint(HashMap<String,String> attribs,ExtensionsHelper helper)
 	{

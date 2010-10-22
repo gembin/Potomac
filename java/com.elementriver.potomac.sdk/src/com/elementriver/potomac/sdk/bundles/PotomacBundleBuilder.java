@@ -13,8 +13,6 @@ package com.elementriver.potomac.sdk.bundles;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,7 +44,6 @@ import com.adobe.flexbuilder.codemodel.indices.IClassNameIndex;
 import com.adobe.flexbuilder.codemodel.indices.IInterfaceNameIndex;
 import com.adobe.flexbuilder.codemodel.internal.testing.IAdaptableNode;
 import com.adobe.flexbuilder.codemodel.internal.tree.AccessorNode;
-import com.adobe.flexbuilder.codemodel.internal.tree.ClassNode;
 import com.adobe.flexbuilder.codemodel.internal.tree.NodeBase;
 import com.adobe.flexbuilder.codemodel.internal.tree.metadata.MetaTagNode;
 import com.adobe.flexbuilder.codemodel.internal.tree.metadata.MetaTagsNode;
@@ -57,9 +54,15 @@ import com.adobe.flexbuilder.project.actionscript.IActionScriptProject;
 import com.adobe.flexbuilder.project.compiler.Problem;
 import com.adobe.flexbuilder.project.compiler.StyleProblem;
 import com.adobe.flexbuilder.project.internal.FlexLibraryProjectSettings;
-import com.elementriver.potomac.sdk.ExtensionAndPointsUtil;
 import com.elementriver.potomac.sdk.IgnoredMetadata;
+import com.elementriver.potomac.sdk.PluginExtensionsHelper;
+import com.elementriver.potomac.sdk.PluginFunction;
+import com.elementriver.potomac.sdk.PluginType;
+import com.elementriver.potomac.sdk.PluginVariable;
 import com.elementriver.potomac.sdk.Potomac;
+import com.elementriver.potomac.shared.BundleModel;
+import com.elementriver.potomac.shared.ExtensionsMetadataProcessor;
+import com.elementriver.potomac.shared.PDefinition;
 
 import flex2.tools.oem.Application;
 import flex2.tools.oem.Configuration;
@@ -249,9 +252,9 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 		//System.out.println("done metadata");
 		
 		if (refreshBundleXMLModel)
-			BundleModelManager.getInstance().clearModelCache(getProject().getName());
+			PluginBundleModelManager.getInstance().clearModelCache(getProject().getName());
 		
-		BundleModel bundleModel = BundleModelManager.getInstance().getModel(getProject().getName());
+		BundleModel bundleModel = PluginBundleModelManager.getInstance().getModel(getProject().getName());
 		
 		
 		if (!bundleModel.dirty)
@@ -276,18 +279,18 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 		{
 			monitor.beginTask("Writing bundle.xml to /bin", IProgressMonitor.UNKNOWN);
 			
-			BundleModelManager.getInstance().saveModel(getProject().getName(),true);
-			BundleModelManager.getInstance().fireBundleExtensionChangeEvent(getProject().getName());
+			PluginBundleModelManager.getInstance().saveModel(getProject().getName(),true);
+			PluginBundleModelManager.getInstance().fireBundleExtensionChangeEvent(getProject().getName());
 		}
 		
 		//This following 4 lines is just a temporary thing that will delete the ext and ext pt data from the 
 		//root bundle.xml if that data exists.  The new approach does not save the data there.  That data won't
 		//do any harm but its best to clean it up to remove confusion.  This code should eventually be removed
 		//as there wont be anymore users who have this older data.
-		if (cleanBuild && BundleModelManager.getInstance().modelHasOlderData(getProject().getName()))
+		if (cleanBuild && PluginBundleModelManager.getInstance().modelHasOlderData(getProject().getName()))
 		{
 			//rewrite bundle.xml w/o ext data
-			BundleModelManager.getInstance().saveModel(getProject().getName(),false);	
+			PluginBundleModelManager.getInstance().saveModel(getProject().getName(),false);	
 		}
 		
 		
@@ -523,17 +526,22 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 			
 			assetsClass += newLine + newLine;
 			
+			File projRootFile = getProject().getLocation().toFile();
+			
 			for (String asset : extensionAssets)
 			{
-				path = getProject().getFile(asset).getLocation().makeAbsolute().toFile().getAbsolutePath();
+				//path = getProject().getFile(asset).getLocation().makeAbsolute().toFile().getAbsolutePath();
+				path = asset;
 				
 				path = path.replace('\\','/');
 				assetsClass += "[Embed(source=\""+path+"\")]" +newLine;;
 				
 				varName = asset;
+				varName = varName.substring(projRootFile.getAbsolutePath().length() + 1);
 				varName = varName.replace('/','_');
 				varName = varName.replace('.','_');
 				varName = varName.replace(' ','_');
+				varName = varName.replace('\\','_');
 				
 				assetsClass += "public var "+varName+":Class;";
 				
@@ -709,6 +717,8 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 		}
 		
 		
+		PluginExtensionsHelper helper = new PluginExtensionsHelper(getProject(), CMFactory.getManager().getProjectFor(getProject()));
+		
 		ArrayList<IClass> types = null;
 		
 		
@@ -733,7 +743,7 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 			for (IMetaTag tag : tags) {
 				
 				HashMap<String,String> extPt = getMapFromTag(tag);
-				ArrayList<String> msgs = validateExtensionPoint(extPt);
+				ArrayList<String> msgs = ExtensionsMetadataProcessor.validateExtensionPoint(extPt,helper);
 				if (msgs.size() > 0)
 				{
 					for (String msg : msgs)
@@ -771,9 +781,9 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 		}
 		
 		
-		BundleModel model = BundleModelManager.getInstance().getModel(getProject().getName());			
+		BundleModel model = PluginBundleModelManager.getInstance().getModel(getProject().getName());			
 		
-		ArrayList<String> allExtPts = BundleModelManager.getInstance().getAllExtensionPointIDs(model.dependencies);
+		ArrayList<String> allExtPts = PluginBundleModelManager.getInstance().getAllExtensionPointIDs(model.dependencies);
 		//now add the extPts we just got
 		for (HashMap<String,String> pt : extensionPoints)
 		{
@@ -817,7 +827,7 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 					}
 					if (extPt == null)
 					{
-						extPt = BundleModelManager.getInstance().getExtensionPoint(point);
+						extPt = PluginBundleModelManager.getInstance().getExtensionPoint(point);
 						
 						//ensure we don't pull an older version from the extPt cache.  This can
 						//happen if we pull the extPt from the cache for this bundle.  If the 
@@ -828,6 +838,8 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 							extPt = null;
 						}
 					}		
+					
+					IDefinition declaringDef = getDeclaringDefinition(tag);
 					
 					ArrayList<String> msgs = null;
 					if (extPt == null)
@@ -842,7 +854,22 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 					}
 					else
 					{
-						msgs = validateExtension(ext,extPt,type,tag);
+						PDefinition pDeclaringDef = null;
+						if (declaringDef instanceof IFunction && !(declaringDef instanceof BindableVariableNode))
+						{								
+							pDeclaringDef = new PluginFunction((IFunction) declaringDef);
+						}
+						else if (declaringDef instanceof IVariable)
+						{
+							pDeclaringDef = new PluginVariable((IVariable) declaringDef);
+						}
+						else
+						{
+							pDeclaringDef = new PluginType((IType) declaringDef);
+						}
+						
+						
+						msgs = ExtensionsMetadataProcessor.validateExtension(ext,extPt,new PluginType(type),pDeclaringDef,helper,model);
 					}						
 					
 					if (msgs.size() > 0)
@@ -858,22 +885,22 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 					}
 					else
 					{
-						IDefinition def = getDeclaringDefinition(tag);
-						if (def instanceof IFunction && !(def instanceof BindableVariableNode))
+						
+						if (declaringDef instanceof IFunction && !(declaringDef instanceof BindableVariableNode))
 						{								
-							ext.put("function",def.getName());
-							ext.put("functionSignature",getFunctionString((IFunction) def));
+							ext.put("function",declaringDef.getName());
+							ext.put("functionSignature",getFunctionString((IFunction) declaringDef));
 						}
-						else if (def instanceof IVariable)
+						else if (declaringDef instanceof IVariable)
 						{
-							ext.put("variable",def.getName());
-							String varTypeName = resolveVarType((IVariable) def);
+							ext.put("variable",declaringDef.getName());
+							String varTypeName = resolveVarType((IVariable) declaringDef);
 							if (varTypeName == null)
 							{
 								varTypeName = "ERROR";
 								IMarker marker = getProject().createMarker(MARKER_TYPE);
 								marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-								marker.setAttribute(IMarker.MESSAGE,"The Flex Code Model is unable to resolve the type for variable:" + def +".  This is an intermittent problem that usually occurs when cleaning the entire workspace.  Cleaning or building this individual project should resolve it.");					
+								marker.setAttribute(IMarker.MESSAGE,"The Flex Code Model is unable to resolve the type for variable:" + declaringDef +".  This is an intermittent problem that usually occurs when cleaning the entire workspace.  Cleaning or building this individual project should resolve it.");					
 							}
 							ext.put("variableType",varTypeName);
 						}
@@ -915,540 +942,540 @@ public class PotomacBundleBuilder extends IncrementalProjectBuilder {
 		}
 	}
 	
-	private ArrayList<String> validateExtension(HashMap<String,String> ext, HashMap<String,String> extPt,IType containingType,IMetaTag tag)
-	{
-		ArrayList<String> msgs = new ArrayList<String>();
-	
-
-		for (String key : extPt.keySet()) 
-		{					
-			if (key.equals("bundle") || key.equals("declaredBy") || key.equals("id") ||
-					key.equals("type") || key.equals("declaredOn") || key.equals("access") )
-			{
-				continue;
-			}
-
-			String datatype = extPt.get(key);
-			boolean reqd = datatype.startsWith("*");
-			if (reqd)
-				datatype = datatype.substring(1);
-			
-			String value = ext.get(key);
-			
-			if (value != null && !value.trim().equals(""))
-			{
-				
-				//check datatypes
-				if (datatype.equalsIgnoreCase("integer"))
-				{
-					try {
-						Integer.parseInt(value);
-					} catch (NumberFormatException e) {
-						msgs.add("Attribute '" + key + "' must be a valid integer.");
-					}
-				}
-				else if (datatype.equalsIgnoreCase("boolean"))
-				{
-					if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false"))
-					{
-						msgs.add("Attribute '" + key + "' must be either true or false.");
-					}
-				}
-				else if (datatype.toLowerCase().startsWith("class"))
-				{
-					String classType = "";
-					if (datatype.length() > 6)
-						classType = datatype.substring(6);
-					
-					IDefinition def = getFlexDefinition(value);
-					if (def == null || !(def instanceof IClass))
-					{
-						msgs.add("Attribute + '" + key + "' must be a fully qualified class name.");
-					}
-					else
-					{
-						IClass valueDef = (IClass) getFlexDefinition(value);
-						if (valueDef == null || ((!classType.equals("")) && !valueDef.isInstanceOf(classType)))
-						{
-							msgs.add("Attribute '" + key + "' must be a fully qualified subclass of " + classType +".");
-						}
-					}
-				}
-				else if (datatype.startsWith("interface"))
-				{
-					String classType = "";
-					if (datatype.length() > 10)
-						classType = datatype.substring(10);
-					
-					IDefinition def = getFlexDefinition(value);
-					if (def == null || !(def instanceof IInterface))
-					{
-						msgs.add("Attribute + '" + key + "' must be a fully qualified interface name.");
-					}
-					else
-					{
-						IInterface valueDef = (IInterface) getFlexDefinition(value);
-						if (valueDef == null || ((!classType.equals("")) && !valueDef.isInstanceOf(classType)))
-						{
-							msgs.add("Attribute '" + key + "' must be a fully qualified subclass of " + classType +".");
-						}
-					}
-				}
-				else if (datatype.startsWith("type"))
-				{
-					String classType = "";
-					if (datatype.length() > 5)
-						classType = datatype.substring(5);
-					
-					IDefinition def = getFlexDefinition(value);
-					if (def == null || !(def instanceof IType))
-					{
-						msgs.add("Attribute '" + key + "' must be a fully qualified type name.");
-					}
-					else
-					{
-						IType valueDef = (IType) getFlexDefinition(value);
-						if (valueDef == null || ((!classType.equals("")) && !valueDef.isInstanceOf(classType)))
-						{
-							msgs.add("Attribute '" + key + "' must be a fully qualified subclass of " + classType +".");
-						}
-					}
-				}
-				else if (datatype.startsWith("choice"))
-				{
-					String choicesString = "";
-					if (datatype.length() > 7)
-						choicesString = datatype.substring(7);
-					
-					String choices[] = choicesString.split(",");
-					boolean found = false;
-					for (String choice : choices)
-					{
-						if (choice.equals(value))
-						{
-							found = true;
-							break;
-						}
-					}
-					if (!found)
-					{
-						msgs.add("Attribute '" + key + "' must be one of the following values :" + choicesString);
-					}
-				}
-				else if (datatype.startsWith("asset"))
-				{
-					boolean addToAssetSWF = true;
-					
-					IFile asset = getProject().getFile(value);					
-					if (!asset.exists())
-					{
-						asset = getProject().getFile("extensionAssets/" + value);
-						if (asset.exists())
-						{
-							ext.put(key,"extensionAssets/" + value);
-						}
-					}
-					
-					if (!asset.exists())
-					{
-						msgs.add("Asset '" + value + "' not found.");
-						addToAssetSWF = false;
-					}
-					
-					String assetTypes = "";
-					if (datatype.length() > 6)
-						assetTypes = datatype.substring(6);
-					
-					String types[] = assetTypes.split(",");
-					boolean found = false;
-					for (String type : types)
-					{
-						if (value.toLowerCase().endsWith("." + type))
-						{
-							found = true;
-							break;
-						}
-					}
-					if (!found)
-					{
-						msgs.add("Attribute '" + key + "' must be an asset of type: " + assetTypes);
-						addToAssetSWF = false;
-					}
-					
-					if (addToAssetSWF)
-					{
-						if (!extensionAssets.contains(asset.getProjectRelativePath().toString()))
-							extensionAssets.add(asset.getProjectRelativePath().toString());
-					}
-				}
-			}
-			else if (reqd)
-			{
-				msgs.add("Missing required attribute '" + key + "'.");
-			}					
-		}
-		
-		
-		//Setup the data necessary to check attrib names when argumentsAsAttributes is true
-		ArrayList<IVariable> vars = new ArrayList<IVariable>();
-		String argsAsAttribsVal = extPt.get("argumentsAsAttributes");
-		boolean argsAsAttribs = (argsAsAttribsVal != null && argsAsAttribsVal.equalsIgnoreCase("true"));
-		if (argsAsAttribs)
-		{
-			IDefinition def = getDeclaringDefinition(tag);
-			if (def instanceof IFunction)
-			{
-				vars.addAll(Arrays.asList(((IFunction)def).getArguments()));
-			}
-			else if (def instanceof IVariable)
-			{
-				vars.add((IVariable) def);
-			}
-			else
-			{
-				argsAsAttribs = false;
-			}				
-		}
-				
-		//look for extra attribs
-		for (String key : ext.keySet()){
-			if (key.equals("point") || key.equals("enablesFor")) {
-				continue;
-			}
-			
-			if (!ExtensionAndPointsUtil.isValidExtensionAttribute(key))
-			{
-				msgs.add("Attribute '" + key + "' is not a valid attribute name.");
-				continue;
-			}
-			
-			if (!extPt.containsKey(key))
-			{
-				if (argsAsAttribs)
-				{
-					boolean foundName = false;
-					//check that attrib is an arg name				
-					for (IVariable var : vars)
-					{
-						if (var.getName().equals(key))
-						{
-							foundName = true;
-							break;
-						}
-					}	
-					if (!foundName)
-					{
-						msgs.add("Invalid attribute '" + key + "'.");
-					}
-				}
-				else					
-				{
-					msgs.add("Invalid attribute '" + key + "'.");
-				}
-			}
-		}
-		
-		//check special type requirements
-		if (extPt.containsKey("type"))
-		{
-			String type = extPt.get("type");
-			if (type.startsWith("*"))
-				type = type.substring(1);
-			
-			boolean isInstance = false;
-			
-			if (!containingType.isInstanceOf(type))
-			{
-				//temporary fix - same prob as resolveVarType stuff - FB has
-				//some sort of bug that sometimes not all dependency class are
-				//in the builder class path
-				if (containingType instanceof ClassNode)
-				{
-					ClassNode clzNode = (ClassNode)containingType;
-					
-					String baseClass = clzNode.getBaseClassName();
-					
-					if (baseClass.equals(type))
-					{
-						isInstance = true;
-					}
-					else
-					{
-						Collection<String> imports = new ArrayList<String>();					
-						clzNode.getScope().getAllImports(imports);
-						for (String imp : imports)
-						{
-							if (imp.endsWith("." + baseClass) && imp.equals(type))
-							{
-								isInstance = true;
-								break;
-							}
-						}
-					}
-				}	
-			}
-			else
-			{
-				isInstance = true;
-			}
-			
-			if (!isInstance)
-				msgs.add("This tag must be declared on classes that extend " + type + ".");
-		}
-		
-		//check special access requirements
-		if (extPt.containsKey("access"))
-		{
-			String accessTypes = extPt.get("access");
-			if (accessTypes.startsWith("*"))
-				accessTypes = accessTypes.substring(1);
-			
-			IDefinition declarer = getDeclaringDefinition(tag);
-			String access = declarer.getNamespace();
-			if (!accessTypes.contains(access))
-			{
-				msgs.add("This tag must be declared on definitions with one of the following access modifiers: " + accessTypes +".");
-			}
-		}
-				
-		//check special declaredOn requirements
-		if (extPt.containsKey("declaredOn"))
-		{
-			String declaredOn = extPt.get("declaredOn");
-			if (declaredOn.startsWith("*"))
-			{
-				declaredOn = declaredOn.substring(1);
-			}
-			IDefinition declarer = getDeclaringDefinition(tag);
-			String classification = "";
-			if (declarer instanceof IFunction)
-			{
-				if (((IFunction)declarer).isConstructor())
-				{
-					classification = "constructors";
-				}
-				else
-				{
-					classification = "methods";
-				}
-			} else if (declarer instanceof IClass)
-			{
-				classification = "classes";
-			} else if (declarer instanceof IVariable)
-			{
-				classification = "variables";
-			}
-
-			if (!declaredOn.contains(classification))
-			{
-				msgs.add("This tag must be declared on one of the following: " + declaredOn +".");
-			}			
-		}
-		
-		if (extPt.containsKey("idRequired"))
-		{
-			if (extPt.get("idRequired").equals("true"))
-			{
-				if (!ext.containsKey("id"))
-				{
-					msgs.add("Missing required attribute 'id'.");
-				}
-			}
-		}
-
-		return msgs;
-	}
-	
-	private ArrayList<String> validateExtensionPoint(HashMap<String,String> attribs)
-	{
-		ArrayList<String> msgs = new ArrayList<String>();
-		
-		String id = (String) attribs.get("id");
-		if (id == null || id.equals(""))
-		{
-			msgs.add("ExtensionPoint 'id' parameter not found.");
-		}
-		else
-		{
-			if (!ExtensionAndPointsUtil.isValidExtensionPointID(id))
-			{
-				msgs.add("ID '" + attribs.get(id) +"' is not a valid extension point id.");
-			}
-		}
-		
-
-		for(String key : attribs.keySet()) {     		
-			
-			if (ExtensionAndPointsUtil.isSpecialExtensionPointAttributes(key))
-				continue;
-			
-			if (ExtensionAndPointsUtil.isReservedExtensionPointAttribute(key))
-			{
-				msgs.add("Attribute '" + key + "' is a reserved attribute name.");
-				continue;
-			}
-			
-			if (key.equals("rslRequired"))
-			{
-				msgs.add("The rslRequired attribute has been replaced with the preloadRequired attribute.");
-				continue;
-			}
-			
-		     String value = (String) attribs.get(key);
-		     
-		     if (ExtensionAndPointsUtil.isAutoAddedExtensionPointAttributes(key))
-		     {
-		    	 msgs.add("Attribute '" + key + "' is an automatically generated attribute.");
-		    	 continue;
-		     }
-		     
-		     if (value.startsWith("*"))
-    		 {
-		    	 value = value.substring(1);
-    		 }
-
-		     
-		     if (value != null && !value.startsWith("choice:") && !value.startsWith("type:") && 
-		    		 !value.equals("type") && !value.startsWith("class:") && 
-		    		 !value.equals("class") && !value.startsWith("interface:") && 
-		    		 !value.equals("interface") && !value.equals("string") && 
-		    		 !value.equals("integer") && !value.equals("boolean") &&
-		    		 !value.equals("asset") && !value.startsWith("asset:"))
-		     {
-		    	 msgs.add("Attribute '" + key + "' specifies an invalid datatype.  Valid datatypes are string, integer, boolean, type, class, interface, asset, or choice.");
-		     }	
-		     
-		     //TODO: check we don't have an existing point with the same id
-		     
-		     //check any class: types are ok
-		     if (value.startsWith("class:") || value.startsWith("interface:") || value.startsWith("type:"))
-		     {
-		    	 String className = "";
-		    	 if (value.toLowerCase().startsWith("class:"))
-		    	 {
-		    		 className = value.substring(6);
-		    	 }
-		    	 else if (value.toLowerCase().startsWith("interface:"))
-		    	 {
-		    		 className = value.substring(10); 
-		    	 }
-		    	 else
-		    	 {
-		    		 className = value.substring(5);
-		    	 }
-
-		    	 IDefinition def = getFlexDefinition(className);
-		    	 if (def == null)
-		    	 {
-		    		 msgs.add(className +" isn't a valid type.");
-		    	 }
-		    	 else 
-		    	 {
-		    		 boolean valid = (def instanceof IType);
-		    		 if (!valid)
-		    		 {
-		    			 msgs.add(className + " isn't a valid type.");
-		    		 }
-		    		 else
-		    		 {
-				    	 if (value.toLowerCase().startsWith("class:") && !(def instanceof IType))
-				    	 {
-				    		 msgs.add(className + " isn't a valid type.");
-				    	 }
-				    	 else if (value.toLowerCase().startsWith("interface:") && !(def instanceof IInterface))
-				    	 {
-				    		msgs.add(className + " isn't a valid inteface.");
-				    	 }
-		    		 }
-		    	 }
-		     }			     
-		}
-		
-		
-		//Do type checking
-		String type = attribs.get("type");
-		if (type != null)
-		{
-		     if (type.startsWith("*"))
-			 {
-		    	 type = type.substring(1);
-			 }
-
-	    	 IDefinition def = getFlexDefinition(type);
-	    	 if (def == null)
-	    	 {
-	    		 msgs.add(type +" isn't a valid type.");
-	    	 }
-	    	 else 
-	    	 {
-	    		 boolean valid = (def instanceof IType);
-	    		 if (!valid)
-	    		 {
-	    			 msgs.add(type + " isn't a class or interface.");
-	    		 }
-	    	 }
-	     }	
-
-		
-    	 //Do access checking
-		String access = attribs.get("access");
-		if (access != null)
-		{
-		     if (access.startsWith("*"))
-			 {
-		    	 access = access.substring(1);
-			 }
-		     String accessTypes[] = access.split(",");
-		     for (String choice : accessTypes)
-		     {
-		    	 if (!choice.equals("private") && !choice.equals("protected") && !choice.equals("public") && !choice.equals("internal"))
-		    	 {
-		    		 msgs.add("Special attribute 'access' must be a comma delimited string with any of the following values: public,protected,private,internal.");
-		    		 break;
-		    	 }
-		     }
-		}
-    	   	 
-    	 
-    	 //Do declaredOn checking
-		String declaredOn = attribs.get("declaredOn");
-		if (declaredOn != null)
-		{
-			if (declaredOn.startsWith("*"))
-			{
-				declaredOn = declaredOn.substring(1);
-			}
-		     String choices[] = declaredOn.split(",");
-		     for (String choice : choices)
-		     {
-		    	 if (!choice.equals("classes") && !choice.equals("methods") && !choice.equals("variables") && !choice.equals("constructors"))
-		    	 {
-		    		 msgs.add("Special attribute 'declaredOn' must be a comma delimited string with any of the following values: classes,constructors,methods,variables.");
-		    		 break;
-		    	 }
-		     }
-		}
-			
-		//Do argumentsAsAttributes checking
-		String argsAsAttribs = attribs.get("argumentsAsAttributes");
-		if (argsAsAttribs != null)
-		{
-			if (argsAsAttribs.startsWith("*"))
-			{
-				argsAsAttribs = argsAsAttribs.substring(1);
-			}
-			if (argsAsAttribs.equalsIgnoreCase("true"))
-			{
-				if (declaredOn != null && !(declaredOn.contains("methods") || declaredOn.contains("constructors") || declaredOn.contains("variables")))
-				{
-					msgs.add("'argumentsAsAttributes' may only be specified when 'declaredOn' includes constructors, methods, or variables.");
-				}
-			}			
-		}
-		
-		
-		return msgs;
-	}
+//	private ArrayList<String> validateExtension(HashMap<String,String> ext, HashMap<String,String> extPt,IType containingType,IMetaTag tag)
+//	{
+//		ArrayList<String> msgs = new ArrayList<String>();
+//	
+//
+//		for (String key : extPt.keySet()) 
+//		{					
+//			if (key.equals("bundle") || key.equals("declaredBy") || key.equals("id") ||
+//					key.equals("type") || key.equals("declaredOn") || key.equals("access") )
+//			{
+//				continue;
+//			}
+//
+//			String datatype = extPt.get(key);
+//			boolean reqd = datatype.startsWith("*");
+//			if (reqd)
+//				datatype = datatype.substring(1);
+//			
+//			String value = ext.get(key);
+//			
+//			if (value != null && !value.trim().equals(""))
+//			{
+//				
+//				//check datatypes
+//				if (datatype.equalsIgnoreCase("integer"))
+//				{
+//					try {
+//						Integer.parseInt(value);
+//					} catch (NumberFormatException e) {
+//						msgs.add("Attribute '" + key + "' must be a valid integer.");
+//					}
+//				}
+//				else if (datatype.equalsIgnoreCase("boolean"))
+//				{
+//					if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false"))
+//					{
+//						msgs.add("Attribute '" + key + "' must be either true or false.");
+//					}
+//				}
+//				else if (datatype.toLowerCase().startsWith("class"))
+//				{
+//					String classType = "";
+//					if (datatype.length() > 6)
+//						classType = datatype.substring(6);
+//					
+//					IDefinition def = getFlexDefinition(value);
+//					if (def == null || !(def instanceof IClass))
+//					{
+//						msgs.add("Attribute + '" + key + "' must be a fully qualified class name.");
+//					}
+//					else
+//					{
+//						IClass valueDef = (IClass) getFlexDefinition(value);
+//						if (valueDef == null || ((!classType.equals("")) && !valueDef.isInstanceOf(classType)))
+//						{
+//							msgs.add("Attribute '" + key + "' must be a fully qualified subclass of " + classType +".");
+//						}
+//					}
+//				}
+//				else if (datatype.startsWith("interface"))
+//				{
+//					String classType = "";
+//					if (datatype.length() > 10)
+//						classType = datatype.substring(10);
+//					
+//					IDefinition def = getFlexDefinition(value);
+//					if (def == null || !(def instanceof IInterface))
+//					{
+//						msgs.add("Attribute + '" + key + "' must be a fully qualified interface name.");
+//					}
+//					else
+//					{
+//						IInterface valueDef = (IInterface) getFlexDefinition(value);
+//						if (valueDef == null || ((!classType.equals("")) && !valueDef.isInstanceOf(classType)))
+//						{
+//							msgs.add("Attribute '" + key + "' must be a fully qualified subclass of " + classType +".");
+//						}
+//					}
+//				}
+//				else if (datatype.startsWith("type"))
+//				{
+//					String classType = "";
+//					if (datatype.length() > 5)
+//						classType = datatype.substring(5);
+//					
+//					IDefinition def = getFlexDefinition(value);
+//					if (def == null || !(def instanceof IType))
+//					{
+//						msgs.add("Attribute '" + key + "' must be a fully qualified type name.");
+//					}
+//					else
+//					{
+//						IType valueDef = (IType) getFlexDefinition(value);
+//						if (valueDef == null || ((!classType.equals("")) && !valueDef.isInstanceOf(classType)))
+//						{
+//							msgs.add("Attribute '" + key + "' must be a fully qualified subclass of " + classType +".");
+//						}
+//					}
+//				}
+//				else if (datatype.startsWith("choice"))
+//				{
+//					String choicesString = "";
+//					if (datatype.length() > 7)
+//						choicesString = datatype.substring(7);
+//					
+//					String choices[] = choicesString.split(",");
+//					boolean found = false;
+//					for (String choice : choices)
+//					{
+//						if (choice.equals(value))
+//						{
+//							found = true;
+//							break;
+//						}
+//					}
+//					if (!found)
+//					{
+//						msgs.add("Attribute '" + key + "' must be one of the following values :" + choicesString);
+//					}
+//				}
+//				else if (datatype.startsWith("asset"))
+//				{
+//					boolean addToAssetSWF = true;
+//					
+//					IFile asset = getProject().getFile(value);					
+//					if (!asset.exists())
+//					{
+//						asset = getProject().getFile("extensionAssets/" + value);
+//						if (asset.exists())
+//						{
+//							ext.put(key,"extensionAssets/" + value);
+//						}
+//					}
+//					
+//					if (!asset.exists())
+//					{
+//						msgs.add("Asset '" + value + "' not found.");
+//						addToAssetSWF = false;
+//					}
+//					
+//					String assetTypes = "";
+//					if (datatype.length() > 6)
+//						assetTypes = datatype.substring(6);
+//					
+//					String types[] = assetTypes.split(",");
+//					boolean found = false;
+//					for (String type : types)
+//					{
+//						if (value.toLowerCase().endsWith("." + type))
+//						{
+//							found = true;
+//							break;
+//						}
+//					}
+//					if (!found)
+//					{
+//						msgs.add("Attribute '" + key + "' must be an asset of type: " + assetTypes);
+//						addToAssetSWF = false;
+//					}
+//					
+//					if (addToAssetSWF)
+//					{
+//						if (!extensionAssets.contains(asset.getProjectRelativePath().toString()))
+//							extensionAssets.add(asset.getProjectRelativePath().toString());
+//					}
+//				}
+//			}
+//			else if (reqd)
+//			{
+//				msgs.add("Missing required attribute '" + key + "'.");
+//			}					
+//		}
+//		
+//		
+//		//Setup the data necessary to check attrib names when argumentsAsAttributes is true
+//		ArrayList<IVariable> vars = new ArrayList<IVariable>();
+//		String argsAsAttribsVal = extPt.get("argumentsAsAttributes");
+//		boolean argsAsAttribs = (argsAsAttribsVal != null && argsAsAttribsVal.equalsIgnoreCase("true"));
+//		if (argsAsAttribs)
+//		{
+//			IDefinition def = getDeclaringDefinition(tag);
+//			if (def instanceof IFunction)
+//			{
+//				vars.addAll(Arrays.asList(((IFunction)def).getArguments()));
+//			}
+//			else if (def instanceof IVariable)
+//			{
+//				vars.add((IVariable) def);
+//			}
+//			else
+//			{
+//				argsAsAttribs = false;
+//			}				
+//		}
+//				
+//		//look for extra attribs
+//		for (String key : ext.keySet()){
+//			if (key.equals("point") || key.equals("enablesFor")) {
+//				continue;
+//			}
+//			
+//			if (!ExtensionAndPointsUtil.isValidExtensionAttribute(key))
+//			{
+//				msgs.add("Attribute '" + key + "' is not a valid attribute name.");
+//				continue;
+//			}
+//			
+//			if (!extPt.containsKey(key))
+//			{
+//				if (argsAsAttribs)
+//				{
+//					boolean foundName = false;
+//					//check that attrib is an arg name				
+//					for (IVariable var : vars)
+//					{
+//						if (var.getName().equals(key))
+//						{
+//							foundName = true;
+//							break;
+//						}
+//					}	
+//					if (!foundName)
+//					{
+//						msgs.add("Invalid attribute '" + key + "'.");
+//					}
+//				}
+//				else					
+//				{
+//					msgs.add("Invalid attribute '" + key + "'.");
+//				}
+//			}
+//		}
+//		
+//		//check special type requirements
+//		if (extPt.containsKey("type"))
+//		{
+//			String type = extPt.get("type");
+//			if (type.startsWith("*"))
+//				type = type.substring(1);
+//			
+//			boolean isInstance = false;
+//			
+//			if (!containingType.isInstanceOf(type))
+//			{
+//				//temporary fix - same prob as resolveVarType stuff - FB has
+//				//some sort of bug that sometimes not all dependency class are
+//				//in the builder class path
+//				if (containingType instanceof ClassNode)
+//				{
+//					ClassNode clzNode = (ClassNode)containingType;
+//					
+//					String baseClass = clzNode.getBaseClassName();
+//					
+//					if (baseClass.equals(type))
+//					{
+//						isInstance = true;
+//					}
+//					else
+//					{
+//						Collection<String> imports = new ArrayList<String>();					
+//						clzNode.getScope().getAllImports(imports);
+//						for (String imp : imports)
+//						{
+//							if (imp.endsWith("." + baseClass) && imp.equals(type))
+//							{
+//								isInstance = true;
+//								break;
+//							}
+//						}
+//					}
+//				}	
+//			}
+//			else
+//			{
+//				isInstance = true;
+//			}
+//			
+//			if (!isInstance)
+//				msgs.add("This tag must be declared on classes that extend " + type + ".");
+//		}
+//		
+//		//check special access requirements
+//		if (extPt.containsKey("access"))
+//		{
+//			String accessTypes = extPt.get("access");
+//			if (accessTypes.startsWith("*"))
+//				accessTypes = accessTypes.substring(1);
+//			
+//			IDefinition declarer = getDeclaringDefinition(tag);
+//			String access = declarer.getNamespace();
+//			if (!accessTypes.contains(access))
+//			{
+//				msgs.add("This tag must be declared on definitions with one of the following access modifiers: " + accessTypes +".");
+//			}
+//		}
+//				
+//		//check special declaredOn requirements
+//		if (extPt.containsKey("declaredOn"))
+//		{
+//			String declaredOn = extPt.get("declaredOn");
+//			if (declaredOn.startsWith("*"))
+//			{
+//				declaredOn = declaredOn.substring(1);
+//			}
+//			IDefinition declarer = getDeclaringDefinition(tag);
+//			String classification = "";
+//			if (declarer instanceof IFunction)
+//			{
+//				if (((IFunction)declarer).isConstructor())
+//				{
+//					classification = "constructors";
+//				}
+//				else
+//				{
+//					classification = "methods";
+//				}
+//			} else if (declarer instanceof IClass)
+//			{
+//				classification = "classes";
+//			} else if (declarer instanceof IVariable)
+//			{
+//				classification = "variables";
+//			}
+//
+//			if (!declaredOn.contains(classification))
+//			{
+//				msgs.add("This tag must be declared on one of the following: " + declaredOn +".");
+//			}			
+//		}
+//		
+//		if (extPt.containsKey("idRequired"))
+//		{
+//			if (extPt.get("idRequired").equals("true"))
+//			{
+//				if (!ext.containsKey("id"))
+//				{
+//					msgs.add("Missing required attribute 'id'.");
+//				}
+//			}
+//		}
+//
+//		return msgs;
+//	}
+//	
+//	private ArrayList<String> validateExtensionPoint(HashMap<String,String> attribs)
+//	{
+//		ArrayList<String> msgs = new ArrayList<String>();
+//		
+//		String id = (String) attribs.get("id");
+//		if (id == null || id.equals(""))
+//		{
+//			msgs.add("ExtensionPoint 'id' parameter not found.");
+//		}
+//		else
+//		{
+//			if (!ExtensionAndPointsUtil.isValidExtensionPointID(id))
+//			{
+//				msgs.add("ID '" + attribs.get(id) +"' is not a valid extension point id.");
+//			}
+//		}
+//		
+//
+//		for(String key : attribs.keySet()) {     		
+//			
+//			if (ExtensionAndPointsUtil.isSpecialExtensionPointAttributes(key))
+//				continue;
+//			
+//			if (ExtensionAndPointsUtil.isReservedExtensionPointAttribute(key))
+//			{
+//				msgs.add("Attribute '" + key + "' is a reserved attribute name.");
+//				continue;
+//			}
+//			
+//			if (key.equals("rslRequired"))
+//			{
+//				msgs.add("The rslRequired attribute has been replaced with the preloadRequired attribute.");
+//				continue;
+//			}
+//			
+//		     String value = (String) attribs.get(key);
+//		     
+//		     if (ExtensionAndPointsUtil.isAutoAddedExtensionPointAttributes(key))
+//		     {
+//		    	 msgs.add("Attribute '" + key + "' is an automatically generated attribute.");
+//		    	 continue;
+//		     }
+//		     
+//		     if (value.startsWith("*"))
+//    		 {
+//		    	 value = value.substring(1);
+//    		 }
+//
+//		     
+//		     if (value != null && !value.startsWith("choice:") && !value.startsWith("type:") && 
+//		    		 !value.equals("type") && !value.startsWith("class:") && 
+//		    		 !value.equals("class") && !value.startsWith("interface:") && 
+//		    		 !value.equals("interface") && !value.equals("string") && 
+//		    		 !value.equals("integer") && !value.equals("boolean") &&
+//		    		 !value.equals("asset") && !value.startsWith("asset:"))
+//		     {
+//		    	 msgs.add("Attribute '" + key + "' specifies an invalid datatype.  Valid datatypes are string, integer, boolean, type, class, interface, asset, or choice.");
+//		     }	
+//		     
+//		     //TODO: check we don't have an existing point with the same id
+//		     
+//		     //check any class: types are ok
+//		     if (value.startsWith("class:") || value.startsWith("interface:") || value.startsWith("type:"))
+//		     {
+//		    	 String className = "";
+//		    	 if (value.toLowerCase().startsWith("class:"))
+//		    	 {
+//		    		 className = value.substring(6);
+//		    	 }
+//		    	 else if (value.toLowerCase().startsWith("interface:"))
+//		    	 {
+//		    		 className = value.substring(10); 
+//		    	 }
+//		    	 else
+//		    	 {
+//		    		 className = value.substring(5);
+//		    	 }
+//
+//		    	 IDefinition def = getFlexDefinition(className);
+//		    	 if (def == null)
+//		    	 {
+//		    		 msgs.add(className +" isn't a valid type.");
+//		    	 }
+//		    	 else 
+//		    	 {
+//		    		 boolean valid = (def instanceof IType);
+//		    		 if (!valid)
+//		    		 {
+//		    			 msgs.add(className + " isn't a valid type.");
+//		    		 }
+//		    		 else
+//		    		 {
+//				    	 if (value.toLowerCase().startsWith("class:") && !(def instanceof IType))
+//				    	 {
+//				    		 msgs.add(className + " isn't a valid type.");
+//				    	 }
+//				    	 else if (value.toLowerCase().startsWith("interface:") && !(def instanceof IInterface))
+//				    	 {
+//				    		msgs.add(className + " isn't a valid inteface.");
+//				    	 }
+//		    		 }
+//		    	 }
+//		     }			     
+//		}
+//		
+//		
+//		//Do type checking
+//		String type = attribs.get("type");
+//		if (type != null)
+//		{
+//		     if (type.startsWith("*"))
+//			 {
+//		    	 type = type.substring(1);
+//			 }
+//
+//	    	 IDefinition def = getFlexDefinition(type);
+//	    	 if (def == null)
+//	    	 {
+//	    		 msgs.add(type +" isn't a valid type.");
+//	    	 }
+//	    	 else 
+//	    	 {
+//	    		 boolean valid = (def instanceof IType);
+//	    		 if (!valid)
+//	    		 {
+//	    			 msgs.add(type + " isn't a class or interface.");
+//	    		 }
+//	    	 }
+//	     }	
+//
+//		
+//    	 //Do access checking
+//		String access = attribs.get("access");
+//		if (access != null)
+//		{
+//		     if (access.startsWith("*"))
+//			 {
+//		    	 access = access.substring(1);
+//			 }
+//		     String accessTypes[] = access.split(",");
+//		     for (String choice : accessTypes)
+//		     {
+//		    	 if (!choice.equals("private") && !choice.equals("protected") && !choice.equals("public") && !choice.equals("internal"))
+//		    	 {
+//		    		 msgs.add("Special attribute 'access' must be a comma delimited string with any of the following values: public,protected,private,internal.");
+//		    		 break;
+//		    	 }
+//		     }
+//		}
+//    	   	 
+//    	 
+//    	 //Do declaredOn checking
+//		String declaredOn = attribs.get("declaredOn");
+//		if (declaredOn != null)
+//		{
+//			if (declaredOn.startsWith("*"))
+//			{
+//				declaredOn = declaredOn.substring(1);
+//			}
+//		     String choices[] = declaredOn.split(",");
+//		     for (String choice : choices)
+//		     {
+//		    	 if (!choice.equals("classes") && !choice.equals("methods") && !choice.equals("variables") && !choice.equals("constructors"))
+//		    	 {
+//		    		 msgs.add("Special attribute 'declaredOn' must be a comma delimited string with any of the following values: classes,constructors,methods,variables.");
+//		    		 break;
+//		    	 }
+//		     }
+//		}
+//			
+//		//Do argumentsAsAttributes checking
+//		String argsAsAttribs = attribs.get("argumentsAsAttributes");
+//		if (argsAsAttribs != null)
+//		{
+//			if (argsAsAttribs.startsWith("*"))
+//			{
+//				argsAsAttribs = argsAsAttribs.substring(1);
+//			}
+//			if (argsAsAttribs.equalsIgnoreCase("true"))
+//			{
+//				if (declaredOn != null && !(declaredOn.contains("methods") || declaredOn.contains("constructors") || declaredOn.contains("variables")))
+//				{
+//					msgs.add("'argumentsAsAttributes' may only be specified when 'declaredOn' includes constructors, methods, or variables.");
+//				}
+//			}			
+//		}
+//		
+//		
+//		return msgs;
+//	}
 	
 
 	private HashMap<String,String> getMapFromTag(IMetaTag tag)

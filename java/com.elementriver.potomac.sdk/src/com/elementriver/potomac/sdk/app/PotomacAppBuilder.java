@@ -34,7 +34,9 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.PlatformUI;
@@ -44,9 +46,10 @@ import com.adobe.flexbuilder.project.actionscript.ActionScriptCore;
 import com.adobe.flexbuilder.project.actionscript.IActionScriptProject;
 import com.adobe.flexbuilder.project.actionscript.internal.ActionScriptProjectSettings;
 import com.elementriver.potomac.sdk.Potomac;
-import com.elementriver.potomac.sdk.bundles.BundleModel;
-import com.elementriver.potomac.sdk.bundles.BundleModelManager;
+import com.elementriver.potomac.sdk.bundles.PluginBundleModelManager;
 import com.elementriver.potomac.sdk.bundles.PotomacBundleBuilder;
+import com.elementriver.potomac.shared.BundleModel;
+import com.elementriver.potomac.shared.ExtensionsMetadataProcessor;
 
 public class PotomacAppBuilder extends IncrementalProjectBuilder {
 
@@ -58,6 +61,8 @@ public class PotomacAppBuilder extends IncrementalProjectBuilder {
 
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
 			throws CoreException {
+		
+		
 		//System.out.println("AppBuild on " + getProject());
 
 //		if (kind == CLEAN_BUILD)
@@ -81,6 +86,20 @@ public class PotomacAppBuilder extends IncrementalProjectBuilder {
 			doAppInitCreation = false;
 			
 			IResourceDelta delta = getDelta(getProject());
+			
+			IPath outputPath = ActionScriptCore.getProject(getProject()).getProjectSettings().getOutputFolder();
+			if (outputPath != null)
+			{
+				if (delta.getAffectedChildren().length == 1 && delta.getAffectedChildren()[0].getResource().equals(getProject().getFolder(outputPath)))
+				{
+					//This is just something changing in the output folder, ignore
+					return getProject().getReferencedProjects();
+				}	
+			}
+			
+
+			
+			
 			if (delta != null && delta.findMember(new Path("appManifest.xml")) != null)
 			{
 				doBundleCopy = true;
@@ -134,7 +153,7 @@ public class PotomacAppBuilder extends IncrementalProjectBuilder {
 
 	private void fullBuild() throws CoreException
 	{
-		ManifestModel model = new ManifestModel(getProject().getFile("appManifest.xml"));
+		PluginManifestModel model = new PluginManifestModel(getProject().getFile("appManifest.xml"));
 		
 		//Temporary code
 		//This code is to remove any bundle RSLs from the build path
@@ -163,6 +182,7 @@ public class PotomacAppBuilder extends IncrementalProjectBuilder {
 		}
 		
 		flexProjectSettings.setLibraryPath( libraryPaths.toArray( new IClassPathEntry[ libraryPaths.size() ] ) );
+		asProj.setProjectDescription(flexProjectSettings, new NullProgressMonitor());
 		//end temp code
 		
 		
@@ -197,7 +217,7 @@ public class PotomacAppBuilder extends IncrementalProjectBuilder {
 			
 			for (String bundle : model.bundles)
 			{			
-				BundleModel bundleModel = BundleModelManager.getInstance().getModel(bundle);
+				BundleModel bundleModel = PluginBundleModelManager.getInstance().getModel(bundle);
 				
 				//ensure dependencies are all found
 				for (String depend : bundleModel.dependencies)
@@ -215,7 +235,7 @@ public class PotomacAppBuilder extends IncrementalProjectBuilder {
 				//ensure this bundle is an preload if one of its extensions is an preload only extension
 				for (HashMap<String,String> ext : bundleModel.extensions)
 				{
-					HashMap<String,String> extPt = BundleModelManager.getInstance().getExtensionPoint(ext.get("point"));
+					HashMap<String,String> extPt = PluginBundleModelManager.getInstance().getExtensionPoint(ext.get("point"));
 					if (!model.preloads.contains(bundle) && extPt.get("preloadRequired") != null && extPt.get("preloadRequired").equals("true"))
 					{
 						Potomac.log("Creating marker - appManifest/preload");
@@ -272,283 +292,15 @@ public class PotomacAppBuilder extends IncrementalProjectBuilder {
 				
 		String newline = System.getProperty("line.separator");
 		
-//		if (doAppInitCreation)
-//		{
-//			String cargoXML = "<application>" + newline;
-//			cargoXML += "<bundles>" + newline;
-//			
-//			for (String bundle : model.bundles)
-//			{
-//				String rsl = "false";
-//				if (model.rslPreloads.contains(bundle))
-//					rsl = "true";
-//				cargoXML += "   <bundle rsl='"+rsl+"'>" + bundle + "</bundle>" + newline;
-//			}	
-//			
-//			cargoXML += "</bundles>" + newline;
-//			
-//			cargoXML += "<rsl_xml>" + newline;
-//			
-//			for (String rsl : model.rslPreloads)
-//			{
-//				cargoXML += "   " + BundleModelManager.getInstance().getBundleXMLString(rsl,true);
-//			}
-//				
-//			cargoXML += "</rsl_xml>" + newline;
-//			
-//			cargoXML += "</application>";
-//			
-//			InputStream is = null;
-//			try {
-//				is = new ByteArrayInputStream(cargoXML.getBytes("UTF-8"));
-//			} catch (UnsupportedEncodingException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			
-//			IFile cargo = getProject().getFile(Potomac.getOutputDirectory(getProject()) + "/appCargo.xml");
-//			
-//			try {
-//				if (cargo.exists())
-//				{
-//					cargo.setReadOnly(false);
-//					cargo.setContents(is, true,true, null);
-//				}
-//				else
-//				{
-//					cargo.create(is, true,null);
-//				}
-//			} catch (CoreException e) {
-//				throw Potomac.createCoreException("Error writing cargo file during build.", e);
-//			}
-//			
-//			//Don't set derived, flex won't compile it
-//			//cargo.setDerived(true);
-//			
-//			needRebuild();
-//		}
-		
-		
-
-//		if (doAssetCreation)
-//		{
-//			StringBuilder assetsFileContents = new StringBuilder();
-//			assetsFileContents.append("package potomac.derived {" + newline);
-//			assetsFileContents.append("   public class ExtensionAssets {" + newline);
-//			
-//					
-//			for (String bundle : model.bundles)
-//			{
-//				File ioFolder = null;
-//				IFolder eclipseFolder = null;
-//				boolean hasAssets = false;
-//				IProject project = getProject().getWorkspace().getRoot().getProject(bundle);
-//				if (project.exists())
-//				{
-//					eclipseFolder = project.getFolder(new Path("extensionAssets"));
-//					hasAssets = eclipseFolder.exists();
-//				}
-//				else
-//				{
-//					IPath path = new Path(Potomac.getAssetsPath(bundle));
-//					path = getProject().getWorkspace().getPathVariableManager().resolvePath(path);
-//					ioFolder = path.toFile();
-//					hasAssets = ioFolder.exists() && ioFolder.isDirectory();
-//				}
-//	
-//				if (hasAssets)
-//				{
-//					addAssetsToCode(bundle, ioFolder,eclipseFolder, assetsFileContents);
-//				}			
-//			}
-//			
-//			assetsFileContents.append("   }" + newline + "}");		
-//			
-//			InputStream is = null;
-//			try {
-//				is = new ByteArrayInputStream(assetsFileContents.toString().getBytes("UTF-8"));
-//			} catch (UnsupportedEncodingException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			
-//			IFile assetsClass = getProject().getFile(srcDir + "/potomac/derived/ExtensionAssets.as");
-//			
-//			try {
-//				if (assetsClass.exists())
-//				{
-//					assetsClass.setReadOnly(false);
-//					assetsClass.setContents(is, true,true, null);
-//				}
-//				else
-//				{
-//					assetsClass.create(is, true,null);
-//				}
-//				
-//				//Don't set derived, flex won't compile it
-//				//assetsClass.setDerived(true);
-//			} catch (CoreException e) {
-//				e.printStackTrace();
-//				MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Error Writing ExtensionAssets.as", "Unable to write ExtensionAssets.as.  " + e.getMessage());
-//			}
-//		
-//			needRebuild();
-//		}	
-		
-		//StyleReferences creation
-//		if (!getProject().getFile(srcDir + "/potomac/derived/StyleReferences.as").exists())
-//		{
-//			StringBuilder styleRefFileContents = new StringBuilder();
-//			styleRefFileContents.append("package potomac.derived {" + newline);
-//			styleRefFileContents.append("   import mx.controls.*;" + newline);
-//			styleRefFileContents.append("   import mx.containers.*;" + newline);
-//			styleRefFileContents.append("   public class StyleReferences {" + newline);
-//			
-//			ArrayList<String> refs = StyleReferencesUtil.getClassesToReferences();
-//			for (String ref : refs)
-//			{
-//				styleRefFileContents.append("      private var v" + ref + ":" + ref + ";" + newline);
-//			}
-//			
-//			styleRefFileContents.append("   }" + newline);
-//			styleRefFileContents.append(" }");
-//			
-//			InputStream is = null;
-//			try {
-//				is = new ByteArrayInputStream(styleRefFileContents.toString().getBytes("UTF-8"));
-//			} catch (UnsupportedEncodingException e) {
-//				e.printStackTrace();
-//			}
-//			
-//			IFile styleClas = getProject().getFile(srcDir + "/potomac/derived/StyleReferences.as");
-//			
-//			try {
-//
-//				styleClas.create(is, true,null);
-//				
-//				//Don't set derived, flex won't compile it
-//				//styleClas.setDerived(true);
-//				styleClas.setReadOnly(true);
-//			} catch (CoreException e) {
-//				e.printStackTrace();
-//				MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Error Writing StyleReferences.as", "Unable to write StyleReferences.as.  " + e.getMessage());
-//			}
-//		
-//			needRebuild();
-//		}
 		
 		//do PotomacInitializer creation, we reuse the same cargo creation flag
 		if (doAppInitCreation)
 		{
-			StringBuilder pInitContents = new StringBuilder();
-			pInitContents.append("package potomac.derived {" + newline);
-			pInitContents.append("   import flash.events.Event;" + newline);
-			pInitContents.append("   import mx.core.FlexGlobals;" + newline);
-			pInitContents.append("   import mx.events.FlexEvent;" + newline);
-			pInitContents.append("   import potomac.core.Launcher;" + newline);
-			pInitContents.append("   import potomac.core.LauncherManifest;" + newline);
-			pInitContents.append("   import potomac.core.TemplateRunner;" + newline);
-			pInitContents.append("   public class PotomacInitializer {" + newline);
-				
-			String bundles = "";
-			String preloads = "";
-			for (String bundle : model.bundles)
-			{
-				bundles += "\"" + bundle + "\",";
-				
-				if (model.preloads.contains(bundle))
-					preloads += "\"" + bundle + "\",";
-			}	
-			
-			if (bundles.endsWith(","))
-				bundles = bundles.substring(0,bundles.length()-1);
-			if (preloads.endsWith(","))
-				preloads = preloads.substring(0,preloads.length()-1);
-						
-			pInitContents.append("      private var bundles:Array = ["+bundles+"];" + newline);
-			pInitContents.append("      private var preloads:Array = ["+preloads+"];" + newline);
-			
-			
-			
-			
-			pInitContents.append("      private var templateID:String = \""+model.templateID+"\";" + newline);
-			pInitContents.append("      private var airBundlesURL:String = \""+model.airBundlesURL+"\";" + newline);
-			pInitContents.append("      private var airDisableCaching:Boolean = "+model.airDisableCaching+";" + newline);
-			
-			String templateDataCode = "";
-			HashMap<String,String> templatePropTypes = model.getTemplateParameters(model.templateID,model.bundles);
-			for (String key : model.templateProperties.keySet())
-			{
-				String type = templatePropTypes.get(key);
-				if (type.equals("image"))
-				{
-					if (model.templateProperties.get(key) != null && model.templateProperties.get(key).trim().length() > 0)
-					{
-						IFile file = getProject().getFile(model.templateProperties.get(key));
-						if (file != null && file.exists())
-						{
-							String path = file.getLocation().makeAbsolute().toFile().getAbsolutePath();
-							path = path.replace('\\','/');
-							pInitContents.append("      [Embed(source=\""+path+"\")]" + newline);
-							pInitContents.append("      private var templateProp_"+key+":Class;" + newline);
-							templateDataCode += key + ":new templateProp_"+key+"(),";
-						}
-					}
-				}
-				else if (type.equals("boolean"))
-				{
-					String val = "false";
-					if (model.templateProperties.get(key) != null && model.templateProperties.get(key).equals("true"))
-						val = "true";
-					templateDataCode += key + ":" + val + ",";
-				}
-				else
-				{
-					String val = "";
-					if (model.templateProperties.get(key) != null)
-						val = model.templateProperties.get(key);
-					templateDataCode += key + ":\"" + val + "\",";
-				}
-			}
-			if (templateDataCode.endsWith(","))
-			{
-				templateDataCode = templateDataCode.substring(0, templateDataCode.length() -1);
-			}
-			pInitContents.append("      private var templateData:Object = {"+templateDataCode+"};" + newline);
-			
-			String enableFlags = "";
-			for (String flag : model.enablesForFlags)
-			{
-				enableFlags += "\"" + flag + "\",";
-			}
-			if (enableFlags.endsWith(","))
-				enableFlags = enableFlags.substring(0,enableFlags.length() -1);
-			
-			pInitContents.append("      private var enablesForFlags:Array = ["+enableFlags+"];" + newline);
-			pInitContents.append("      public function PotomacInitializer(){" + newline);
-			pInitContents.append("         FlexGlobals.topLevelApplication.addEventListener(FlexEvent.APPLICATION_COMPLETE,go);" + newline);
-			pInitContents.append("         FlexGlobals.topLevelApplication.addEventListener(FlexEvent.INITIALIZE,init);" + newline);
-			pInitContents.append("      }" + newline);
-			pInitContents.append("      public function init(e:Event):void {" + newline);
-			pInitContents.append("         Launcher.findPreloader();" + newline);
-			pInitContents.append("      }" + newline);
-			pInitContents.append("      public function go(e:Event):void {" + newline);
-			pInitContents.append("         var runner:TemplateRunner = new TemplateRunner(templateID,templateData);" + newline);
-			pInitContents.append("         var manifest:LauncherManifest = new LauncherManifest();" + newline);
-			pInitContents.append("         manifest.bundles = bundles;" + newline);
-			pInitContents.append("         manifest.preloads = preloads;" + newline);
-			pInitContents.append("         manifest.airBundlesURL = airBundlesURL;" + newline);
-			pInitContents.append("         manifest.disableAIRCaching = airDisableCaching;" + newline);
-			pInitContents.append("         manifest.enablesForFlags = enablesForFlags;" + newline);
-			pInitContents.append("         manifest.runner = runner;" + newline);
-			pInitContents.append("         Launcher.launch(manifest);" + newline);
-			pInitContents.append("      }" + newline);
-			pInitContents.append("   }" + newline);
-			pInitContents.append("}");
+			String src = ExtensionsMetadataProcessor.getAppInitializerSource(model, getProject().getLocation().toFile().getAbsolutePath() + "/");
 			
 			InputStream is = null;
 			try {
-				is = new ByteArrayInputStream(pInitContents.toString().getBytes("UTF-8"));
+				is = new ByteArrayInputStream(src.getBytes("UTF-8"));
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
@@ -572,7 +324,7 @@ public class PotomacAppBuilder extends IncrementalProjectBuilder {
 				e.printStackTrace();
 				MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Error Writing PotomacInitializer.as", "Unable to write PotomacInitializer.as.  " + e.getMessage());
 			}
-			
+
 			needRebuild();
 		}
 	}

@@ -18,8 +18,8 @@ import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 
-import com.elementriver.potomac.sdk.bundles.BundleModel;
-import com.elementriver.potomac.sdk.bundles.BundleModelManager;
+import com.elementriver.potomac.sdk.bundles.PluginBundleModelManager;
+import com.elementriver.potomac.shared.BundleModel;
 import com.elementriver.sourcemate.metadata.AttributeModel;
 import com.elementriver.sourcemate.metadata.IMetadataProvider;
 import com.elementriver.sourcemate.metadata.MetadataModel;
@@ -30,7 +30,7 @@ public class SourceMateMetadataProvider implements IMetadataProvider {
 		BundleModel bundle = null;
 		
 		try {
-			bundle = BundleModelManager.getInstance().getModel(project.getName());
+			bundle = PluginBundleModelManager.getInstance().getModel(project.getName());
 		} catch (Exception e) {
 			//ignore
 		}
@@ -99,7 +99,7 @@ public class SourceMateMetadataProvider implements IMetadataProvider {
 		
 		for (String requiredBundle : bundle.dependencies)
 		{
-			bundle = BundleModelManager.getInstance().getModel(requiredBundle);
+			bundle = PluginBundleModelManager.getInstance().getModel(requiredBundle);
 			
 			for (HashMap<String,String> extPt : bundle.extensionPoints)
 			{

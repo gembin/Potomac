@@ -1,4 +1,14 @@
-package org.potomacframework.build;
+/*******************************************************************************
+ *  Copyright (c) 2009 ElementRiver, LLC.
+ *  All rights reserved. This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License v1.0
+ *  which accompanies this distribution, and is available at
+ *  http://www.eclipse.org/legal/epl-v10.html
+ * 
+ *  Contributors:
+ *     ElementRiver, LLC. - initial API and implementation
+ *******************************************************************************/
+package com.elementriver.potomac.shared;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +23,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class ManifestModel {
+public abstract class ManifestModel {
 	
 	public ArrayList<String> bundles = new ArrayList<String>();
 	
@@ -29,18 +39,22 @@ public class ManifestModel {
 	public String airBundlesURL = "";
 	
 	public Boolean airDisableCaching = false;
+	
+	protected abstract BundleModelManager getBundleModelManager();
 
-	public ManifestModel(File manifest)
+	protected void populate(File manifest)
 	{		
 		if (manifest == null || !manifest.exists())
 		{
 			return; 
 		}
+	
+		File file = manifest;
 		
 		try {
 			SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
 			
-			parser.parse(manifest,new DefaultHandler() {
+			parser.parse(file,new DefaultHandler() {
 				
 				boolean inBundle = false;
 				boolean preload = false;
@@ -51,9 +65,8 @@ public class ManifestModel {
 					{
 						inBundle = true;
 						preload = Boolean.parseBoolean(attributes.getValue("rsl"));
-						if (!preload)
+						if (attributes.getValue("preload") != null)
 							preload = Boolean.parseBoolean(attributes.getValue("preload"));
-						
 					}
 					if (name.equals("application"))
 					{
@@ -107,13 +120,64 @@ public class ManifestModel {
 								
 			});
 		} catch (ParserConfigurationException e) {
-			throw new RuntimeException(e);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (SAXException e) {
-			throw new RuntimeException(e);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
+	}
+	
+	public String getManifestXML()
+	{
+		String newline = System.getProperty("line.separator");
+		String xml = "";
+		
+		String enableFlagsString = "";
+		for (String flag : enablesForFlags)
+		{
+			enableFlagsString += flag + ",";
+		}
+		if (enableFlagsString.endsWith(","))
+			enableFlagsString = enableFlagsString.substring(0,enableFlagsString.length() -1);
+		
+		xml += "<application template='"+templateID +"' enablesForFlags='" + enableFlagsString + "' airBundlesURL='"+airBundlesURL+"' airDisableCaching='"+airDisableCaching+"'>" + newline;
+		xml += "<templateData>" + newline;
+		
+		HashMap<String,String> parms = getTemplateParameters(templateID, bundles);
+		
+		if (parms != null)
+		{
+			for (String key : parms.keySet())
+			{
+				String val = "";
+				if (templateProperties.get(key) != null)
+					val = templateProperties.get(key);
+				xml += "   <parameter name='"+key+"' type='" + parms.get(key) + "' value='"+val+"' />" + newline; 
+			}
+		}
+		
+		xml += "</templateData>" + newline;
+		
+		xml += "<bundles>" + newline;
+		
+		for (String bundle : bundles)
+		{
+			String preload = "false";
+			if (preloads.contains(bundle))
+				preload = "true";
+			xml += "   <bundle preload='"+preload+"'>" + bundle + "</bundle>" + newline;
+		}
+		
+		xml += "</bundles>" + newline;
+		xml += "</application>";
+		
+		
+		return xml;
 	}
 	
 	public HashMap<String,String> getTemplateParameters(String templateID,ArrayList<String> dependencies)
@@ -124,7 +188,7 @@ public class ManifestModel {
 		for(String bundle : dependencies)
 		{
 			try {
-				BundleModel model = BundleTask.getModel(bundle);
+				BundleModel model = getBundleModelManager().getModel(bundle);
 				for (HashMap<String,String> ext : model.extensions)
 				{
 					if (ext.get("point").equals("Template") && ext.get("id").equals(templateID))
@@ -152,5 +216,4 @@ public class ManifestModel {
 		
 		return parms;
 	}
-	
 }

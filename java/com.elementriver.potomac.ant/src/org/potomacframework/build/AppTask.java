@@ -21,6 +21,10 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DynamicConfigurator;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
+import org.potomacframework.build.extensionproc.AntManifestModel;
+
+import com.elementriver.potomac.shared.BundleModel;
+import com.elementriver.potomac.shared.ExtensionsMetadataProcessor;
 
 import flex2.tools.oem.Application;
 import flex2.tools.oem.Configuration;
@@ -145,7 +149,7 @@ public class AppTask extends Task implements DynamicConfigurator {
 		if (verbose)
 			System.out.println("Validating appManifest.xml");
 		
-		ManifestModel model = new ManifestModel(new File(workspacePath.toString() + "/" + id + "/appManifest.xml"));
+		AntManifestModel model = new AntManifestModel(new File(workspacePath.toString() + "/" + id + "/appManifest.xml"),BundleTask.bundleModelManager);
 		
 		if (model.templateID == null || model.templateID.trim().length() == 0)
 			throw new BuildException("Template ID not specified in appManifest.xml.");
@@ -154,7 +158,7 @@ public class AppTask extends Task implements DynamicConfigurator {
 		
 		for (String depend : model.bundles)
 		{
-			BundleModel bundleModel = BundleTask.getModel(depend);
+			BundleModel bundleModel = BundleTask.bundleModelManager.getModel(depend);
 			for (HashMap<String,String> ext : bundleModel.extensions)
 			{
 				if (ext.get("point").equals("Template") && ext.get("id").equals(model.templateID))
@@ -173,7 +177,7 @@ public class AppTask extends Task implements DynamicConfigurator {
 		
 		for (String bundle : model.bundles)
 		{			
-			BundleModel bundleModel = BundleTask.getModel(bundle);
+			BundleModel bundleModel = BundleTask.bundleModelManager.getModel(bundle);
 			
 			//ensure dependencies are all found
 			for (String depend : bundleModel.dependencies)
@@ -192,7 +196,7 @@ public class AppTask extends Task implements DynamicConfigurator {
 				
 				for (String subDepend : model.bundles)
 				{
-					BundleModel subDependModel = BundleTask.getModel(subDepend);
+					BundleModel subDependModel = BundleTask.bundleModelManager.getModel(subDepend);
 					
 					for (HashMap pt : subDependModel.extensionPoints) 
 					{
@@ -249,208 +253,11 @@ public class AppTask extends Task implements DynamicConfigurator {
 		
 		String newline = System.getProperty("line.separator");
 		
-		//create app cargo xml
-//		String cargoXML = "<application>" + newline;
-//		cargoXML += "<bundles>" + newline;
-//		
-//		for (String bundle : model.bundles)
-//		{
-//			String rsl = "false";
-//			if (model.rslPreloads.contains(bundle))
-//				rsl = "true";
-//			cargoXML += "   <bundle rsl='"+rsl+"'>" + bundle + "</bundle>" + newline;
-//		}	
-//		
-//		cargoXML += "</bundles>" + newline;
-//		
-//		cargoXML += "<rsl_xml>" + newline;
-//		
-//		for (String rsl : model.rslPreloads)
-//		{
-//			cargoXML += "   " + BundleModelManager.getBundleXMLString(BundleTask.getModel(rsl),true);
-//		}
-//			
-//		cargoXML += "</rsl_xml>" + newline;
-//		
-//		cargoXML += "</application>";
-//		
-//		InputStream is = null;
-//		try {
-//			is = new ByteArrayInputStream(cargoXML.getBytes("UTF-8"));
-//		} catch (UnsupportedEncodingException e) {
-//			throw new BuildException(e);
-//		}
-//		
-//		File cargo = new File(derivedDir,"appCargo.xml");
-//		
-//	    try {
-//			Writer cargoOutput = new BufferedWriter(new FileWriter(cargo));
-//			try {
-//				cargoOutput.write(cargoXML);
-//			}
-//			finally {
-//				cargoOutput.close();
-//			}
-//		} catch (IOException e) {
-//			throw new BuildException(e);
-//		}
-//		
-//		if (verbose)
-//			System.out.println("appCargo.xml created.");
-		
-		//create extensionAssets class
-		
-//		StringBuilder assetsFileContents = new StringBuilder();
-//		assetsFileContents.append("package potomac.derived {" + newline);
-//		assetsFileContents.append("   public class ExtensionAssets {" + newline);
-//		
-//				
-//		for (String bundle : model.bundles)
-//		{
-//			File bundleFolder = new File(outputPath.toString() + "/" + bundle);
-//			if (!bundleFolder.exists())
-//				bundleFolder = new File(targetPlatformPath.toString() + "/" + bundle);
-//			
-//			if (!bundleFolder.exists())
-//				throw new BuildException("Unable to find bundle '"+ bundle + "' in either output directory or target platform.");
-//
-//			File assetsFolder = new File(bundleFolder,"assets");
-//
-//			if (assetsFolder.exists())
-//			{
-//				addAssetsToCode(bundle, assetsFolder, assetsFileContents);
-//			}			
-//		}
-//		
-//		assetsFileContents.append("   }" + newline + "}");		
-//		
-//		File extAssets = new File(derivedDir,"ExtensionAssets.as");
-//		
-//	    try {
-//			Writer extOutput = new BufferedWriter(new FileWriter(extAssets));
-//			try {
-//				extOutput.write(assetsFileContents.toString());
-//			}
-//			finally {
-//				extOutput.close();
-//			}
-//		} catch (IOException e) {
-//			throw new BuildException(e);
-//		}
-//		
-//		if (verbose)
-//			System.out.println("ExtensionAssets.as created.");
+	
 		
 		//create Poto Initer
 		
-		StringBuilder pInitContents = new StringBuilder();
-		pInitContents.append("package potomac.derived {" + newline);
-		pInitContents.append("   import flash.events.Event;" + newline);
-		pInitContents.append("   import mx.core.FlexGlobals;" + newline);
-		pInitContents.append("   import mx.events.FlexEvent;" + newline);
-		pInitContents.append("   import potomac.core.Launcher;" + newline);
-		pInitContents.append("   import potomac.core.LauncherManifest;" + newline);
-		pInitContents.append("   import potomac.core.TemplateRunner;" + newline);
-		pInitContents.append("   public class PotomacInitializer {" + newline);
-		
-		String bundles = "";
-		String preloads = "";
-		for (String bundle : model.bundles)
-		{
-			bundles += "\"" + bundle + "\",";
-			
-			if (model.preloads.contains(bundle))
-				preloads += "\"" + bundle + "\",";
-		}	
-		
-		if (bundles.endsWith(","))
-			bundles = bundles.substring(0,bundles.length()-1);
-		if (preloads.endsWith(","))
-			preloads = preloads.substring(0,preloads.length()-1);
-					
-		pInitContents.append("      private var bundles:Array = ["+bundles+"];" + newline);
-		pInitContents.append("      private var preloads:Array = ["+preloads+"];" + newline);
-		
-		pInitContents.append("      private var templateID:String = \""+model.templateID+"\";" + newline);
-		pInitContents.append("      private var airBundlesURL:String = \""+model.airBundlesURL+"\";" + newline);
-		pInitContents.append("      private var airDisableCaching:Boolean = "+model.airDisableCaching+";" + newline);
-		
-		String templateDataCode = "";
-		HashMap<String,String> templatePropTypes = model.getTemplateParameters(model.templateID,model.bundles);
-		for (String key : model.templateProperties.keySet())
-		{
-			String type = templatePropTypes.get(key);
-			if (type.equals("image"))
-			{
-				if (model.templateProperties.get(key) != null && model.templateProperties.get(key).trim().length() > 0)
-				{
-					File file = new File(workspacePath.toString() + "/" + id + "/" + model.templateProperties.get(key));
-					if (file != null && file.exists())
-					{
-						String path = file.getAbsolutePath();
-						path = path.replace('\\','/');
-						pInitContents.append("      [Embed(source=\""+path+"\")]" + newline);
-						pInitContents.append("      private var templateProp_"+key+":Class;" + newline);
-						templateDataCode += key + ":new templateProp_"+key+"(),";
-					}
-				}
-			}
-			else if (type.equals("boolean"))
-			{
-				String val = "false";
-				if (model.templateProperties.get(key) != null && model.templateProperties.get(key).equals("true"))
-					val = "true";
-				templateDataCode += key + ":" + val + ",";
-			}
-			else
-			{
-				String val = "";
-				if (model.templateProperties.get(key) != null)
-					val = model.templateProperties.get(key);
-				templateDataCode += key + ":\"" + val + "\",";
-			}
-		}
-		if (templateDataCode.endsWith(","))
-		{
-			templateDataCode = templateDataCode.substring(0, templateDataCode.length() -1);
-		}
-		pInitContents.append("      private var templateData:Object = {"+templateDataCode+"};" + newline);
-
-		String enableFlags = "";
-		for (String flag : model.enablesForFlags)
-		{
-			enableFlags += "\"" + flag + "\",";
-		}
-		if (enableFlags.endsWith(","))
-			enableFlags = enableFlags.substring(0,enableFlags.length() -1);
-		
-		pInitContents.append("      private var enablesForFlags:Array = ["+enableFlags+"];" + newline);
-		pInitContents.append("      public function PotomacInitializer(){" + newline);
-		pInitContents.append("         FlexGlobals.topLevelApplication.addEventListener(FlexEvent.APPLICATION_COMPLETE,go);" + newline);
-		pInitContents.append("         FlexGlobals.topLevelApplication.addEventListener(FlexEvent.INITIALIZE,init);" + newline);
-		pInitContents.append("      }" + newline);
-		pInitContents.append("      public function init(e:Event):void {" + newline);
-		pInitContents.append("         Launcher.findPreloader();" + newline);
-		pInitContents.append("      }" + newline);
-		
-		
-		pInitContents.append("      public function go(e:Event):void {" + newline);
-		pInitContents.append("         var runner:TemplateRunner = new TemplateRunner(templateID,templateData);" + newline);
-		pInitContents.append("         var manifest:LauncherManifest = new LauncherManifest();" + newline);
-		pInitContents.append("         manifest.bundles = bundles;" + newline);
-		pInitContents.append("         manifest.preloads = preloads;" + newline);
-		pInitContents.append("         manifest.airBundlesURL = airBundlesURL;" + newline);
-		pInitContents.append("         manifest.disableAIRCaching = airDisableCaching;" + newline);
-		pInitContents.append("         manifest.enablesForFlags = enablesForFlags;" + newline);
-		pInitContents.append("         manifest.runner = runner;" + newline);
-		pInitContents.append("         Launcher.launch(manifest);" + newline);
-		pInitContents.append("      }" + newline);
-		
-
-		
-		
-		pInitContents.append("   }" + newline);
-		pInitContents.append("}");
+		String appInitSrc = ExtensionsMetadataProcessor.getAppInitializerSource(model, workspacePath.toString() + "/" + id + "/");
 		
 		
 		
@@ -459,7 +266,7 @@ public class AppTask extends Task implements DynamicConfigurator {
 	    try {
 			Writer pInitOutput = new BufferedWriter(new FileWriter(pInit));
 			try {
-				pInitOutput.write(pInitContents.toString());
+				pInitOutput.write(appInitSrc.toString());
 			}
 			finally {
 				pInitOutput.close();
@@ -556,7 +363,7 @@ public class AppTask extends Task implements DynamicConfigurator {
 		
 	}
 	
-	private void configureConfiguration(Configuration config, ManifestModel model,String id)
+	private void configureConfiguration(Configuration config, AntManifestModel model,String id)
 	{
 		if (loadConfigs.size() == 0)
 		{

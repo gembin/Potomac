@@ -102,8 +102,8 @@ public class AddAppNatureAction implements IObjectActionDelegate {
 				CMFactory.getRegistrar().registerProject(project,null);
 			}
 	
-			synchronized (CMFactory.getLockObject())
-	   	 	{
+//			synchronized (CMFactory.getLockObject())
+//	   	 	{
 				IActionScriptProject proj = ActionScriptCore.getProject(project);
 				
 				ActionScriptProjectSettings flexProjectSettings = ( ActionScriptProjectSettings ) proj.getProjectSettings();
@@ -148,15 +148,15 @@ public class AddAppNatureAction implements IObjectActionDelegate {
 					libraryPaths.add( classPathEntry );	
 					flexProjectSettings.setLibraryPath( libraryPaths.toArray( new IClassPathEntry[ libraryPaths.size() ] ) );
 					flexProjectSettings.setDefaultLinkType(IClassPathEntry.LINK_TYPE_RSL);
-					flexProjectSettings.saveDescription(project, new NullProgressMonitor());					
+					//flexProjectSettings.saveDescription(project, new NullProgressMonitor());					
 				}
 				else
 				{
 					flexProjectSettings.setDefaultLinkType(IClassPathEntry.LINK_TYPE_RSL);
-					flexProjectSettings.saveDescription(project, new NullProgressMonitor());
+					//flexProjectSettings.saveDescription(project, new NullProgressMonitor());
 				}
-
-	   	 	}
+				proj.setProjectDescription(flexProjectSettings,new NullProgressMonitor());
+//	   	 	}
 			
 			
 			
@@ -173,7 +173,7 @@ public class AddAppNatureAction implements IObjectActionDelegate {
 			
 			if (!project.getFile("appManifest.xml").exists())
 			{
-				ManifestModel model = new ManifestModel(null);
+				PluginManifestModel model = new PluginManifestModel(null);
 				model.bundles.add(PotomacConstants.POTOMAC_CORE_BUNDLEID);
 				model.preloads.add(PotomacConstants.POTOMAC_CORE_BUNDLEID);
 				model.save(project.getFile("appManifest.xml"));
