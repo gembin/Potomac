@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Potomac SDK Plug-in
 Bundle-SymbolicName: com.elementriver.potomac.sdk;singleton:=true
-Bundle-Version: 1.0.0.v09102010
+Bundle-Version: 1.0.0.v10222010
 Bundle-Activator: com.elementriver.potomac.sdk.Activator
 Bundle-Vendor: ELEMENTRIVER
 Require-Bundle: org.eclipse.ui,
