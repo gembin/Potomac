@@ -4,7 +4,7 @@
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
  *  http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  *  Contributors:
  *     ElementRiver, LLC. - initial API and implementation
  *******************************************************************************/
@@ -12,7 +12,7 @@ package potomac.ui.defaultUI
 {
 	import mx.containers.Canvas;
 	import mx.core.Container;
-	
+
 	import potomac.inject.Injector;
 	import potomac.ui.FolderOptions;
 	import potomac.ui.PartExtensionManager;
@@ -28,30 +28,30 @@ package potomac.ui.defaultUI
 	public class NakedFolder extends DefaultBaseFolder
 	{
 		/**
-		 * The folderType attribute for this folder. 
+		 * The folderType attribute for this folder.
 		 */
-		public static const ID:String = "naked";
-		
+		public static const ID:String="naked";
+
 		private var _canvas:Canvas;
-		
+
 		[Inject]
 		/**
 		 * Callers should not construct Folders.  Only Page classes should construct Folders via FolderFactory.
 		 */
-		public function NakedFolder(injector:Injector,partExtensionMgr:PartExtensionManager,selectionSrv:SelectionService,potomacUI:PotomacUI)
+		public function NakedFolder(injector:Injector, partExtensionMgr:PartExtensionManager, selectionSrv:SelectionService, potomacUI:PotomacUI)
 		{
-			super(injector,partExtensionMgr,selectionSrv,potomacUI);		
+			super(injector, partExtensionMgr, selectionSrv, potomacUI);
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
 		override public function create(options:FolderOptions=null):Container
 		{
-			_canvas = new Canvas();
+			_canvas=new Canvas();
 			return _canvas;
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
@@ -59,22 +59,22 @@ package potomac.ui.defaultUI
 		{
 			return _canvas;
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
 		override public function dispose():void
 		{
 		}
-		
-		
+
+
 		/**
 		 * @inheritDoc
 		 */
 		override protected function isShown(busyCanvas:BusyCanvas):Boolean
 		{
 			return true;
-		}		
-		
+		}
+
 	}
 }

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<flexLibProperties includeAllClasses="false" version="1">
+<flexLibProperties includeAllClasses="true" version="1">
   <includeClasses>
     <classEntry path="potomac.bundle.Argument"/>
+    <classEntry path="potomac.bundle.BundleDescriptor"/>
+    <classEntry path="potomac.bundle.BundleError"/>
     <classEntry path="potomac.bundle.BundleEvent"/>
+    <classEntry path="potomac.bundle.BundleInstallDescriptor"/>
     <classEntry path="potomac.bundle.BundleService"/>
     <classEntry path="potomac.bundle.Constructor"/>
     <classEntry path="potomac.bundle.Extension"/>
@@ -11,36 +14,33 @@
     <classEntry path="potomac.bundle.IBundleService"/>
     <classEntry path="potomac.bundle.Method"/>
     <classEntry path="potomac.bundle.Variable"/>
+    <classEntry path="potomac.core.IPotomacPreloader"/>
     <classEntry path="potomac.core.ISerializer"/>
+    <classEntry path="potomac.core.LaunchRunner"/>
+    <classEntry path="potomac.core.Launcher"/>
+    <classEntry path="potomac.core.LauncherManifest"/>
+    <classEntry path="potomac.core.PotomacDispatcher"/>
     <classEntry path="potomac.core.SerializationService"/>
+    <classEntry path="potomac.core.StartupEvent"/>
     <classEntry path="potomac.core.StorageService"/>
+    <classEntry path="potomac.core.TemplateRunner"/>
     <classEntry path="potomac.core.potomac"/>
     <classEntry path="potomac.inject.Binder"/>
+    <classEntry path="potomac.inject.CreationWorker"/>
+    <classEntry path="potomac.inject.GetInstanceWorker"/>
     <classEntry path="potomac.inject.ILinker"/>
     <classEntry path="potomac.inject.INamer"/>
     <classEntry path="potomac.inject.IProvider"/>
     <classEntry path="potomac.inject.IScoper"/>
+    <classEntry path="potomac.inject.InitializedEvent"/>
+    <classEntry path="potomac.inject.InjectIntoWorker"/>
     <classEntry path="potomac.inject.Injectable"/>
     <classEntry path="potomac.inject.InjectionEvent"/>
+    <classEntry path="potomac.inject.InjectionPointWorker"/>
     <classEntry path="potomac.inject.InjectionRequest"/>
     <classEntry path="potomac.inject.Injector"/>
     <classEntry path="potomac.restricted.HandlesFilter"/>
     <classEntry path="potomac.restricted.InjectWithinFilter"/>
-    <classEntry path="potomac.bundle.BundleError"/>
-    <classEntry path="potomac.core.Launcher"/>
-    <classEntry path="potomac.core.IPotomacPreloader"/>
-    <classEntry path="potomac.bundle.BundleInstallDescriptor"/>
-    <classEntry path="potomac.core.StartupEvent"/>
-    <classEntry path="potomac.core.LauncherManifest"/>
-    <classEntry path="potomac.core.LaunchRunner"/>
-    <classEntry path="potomac.core.TemplateRunner"/>
-    <classEntry path="potomac.bundle.BundleDescriptor"/>
-    <classEntry path="potomac.inject.GetInstanceWorker"/>
-    <classEntry path="potomac.inject.InjectIntoWorker"/>
-    <classEntry path="potomac.inject.InitializedEvent"/>
-    <classEntry path="potomac.inject.InjectionPointWorker"/>
-    <classEntry path="potomac.inject.CreationWorker"/>
-    <classEntry path="potomac.core.PotomacDispatcher"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

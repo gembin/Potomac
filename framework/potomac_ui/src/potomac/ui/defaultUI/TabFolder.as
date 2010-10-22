@@ -4,7 +4,7 @@
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
  *  http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  *  Contributors:
  *     ElementRiver, LLC. - initial API and implementation
  *******************************************************************************/
@@ -13,7 +13,7 @@ package potomac.ui.defaultUI
 	import mx.containers.TabNavigator;
 	import mx.core.Container;
 	import mx.events.IndexChangedEvent;
-	
+
 	import potomac.inject.Injector;
 	import potomac.ui.FolderOptions;
 	import potomac.ui.PartExtensionManager;
@@ -29,34 +29,34 @@ package potomac.ui.defaultUI
 	public class TabFolder extends DefaultBaseFolder
 	{
 		/**
-		 * The folderType attribute for this folder. 
+		 * The folderType attribute for this folder.
 		 */
-		public static const ID:String = "tabs";
-		
+		public static const ID:String="tabs";
+
 		private var _tabFolder:TabNavigator;
-		
-		
+
+
 		[Inject]
 		/**
 		 * Callers should not construct Folders.  Only Page classes should construct Folders via FolderFactory.
 		 */
-		public function TabFolder(injector:Injector,partExtensionMgr:PartExtensionManager,selectionSrv:SelectionService,potomacUI:PotomacUI)
+		public function TabFolder(injector:Injector, partExtensionMgr:PartExtensionManager, selectionSrv:SelectionService, potomacUI:PotomacUI)
 		{
-			super(injector,partExtensionMgr,selectionSrv,potomacUI);		
+			super(injector, partExtensionMgr, selectionSrv, potomacUI);
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
 		override public function create(options:FolderOptions=null):Container
 		{
-			_tabFolder = new TabNavigator();
-			_tabFolder.setStyle("paddingTop",0);
-			_tabFolder.historyManagementEnabled = false;
-			_tabFolder.addEventListener(IndexChangedEvent.CHANGE,onTabChange);
+			_tabFolder=new TabNavigator();
+			_tabFolder.setStyle("paddingTop", 0);
+			_tabFolder.historyManagementEnabled=false;
+			_tabFolder.addEventListener(IndexChangedEvent.CHANGE, onTabChange);
 			return _tabFolder;
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
@@ -64,15 +64,15 @@ package potomac.ui.defaultUI
 		{
 			return _tabFolder;
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
 		override public function dispose():void
 		{
-			_tabFolder.removeEventListener(IndexChangedEvent.CHANGE,onTabChange);
+			_tabFolder.removeEventListener(IndexChangedEvent.CHANGE, onTabChange);
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
@@ -81,7 +81,7 @@ package potomac.ui.defaultUI
 			if (_tabFolder.selectedChild != null)
 				loadPart(_tabFolder.selectedChild as BusyCanvas);
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
@@ -89,7 +89,7 @@ package potomac.ui.defaultUI
 		{
 			return (_tabFolder.selectedChild == busyCanvas);
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
@@ -98,31 +98,31 @@ package potomac.ui.defaultUI
 			if (partReference.control == null)
 			{
 				var busyCanvas:BusyCanvas;
-				var kids:Array = getContainer().getChildren();
-				for (var i:int = 0; i < kids.length; i++)
+				var kids:Array=getContainer().getChildren();
+				for (var i:int=0; i < kids.length; i++)
 				{
 					if (partReference.equals(kids[i].partReference))
 					{
-						busyCanvas = kids[i] as BusyCanvas;
+						busyCanvas=kids[i] as BusyCanvas;
 						break;
-					}					
+					}
 				}
 				if (busyCanvas == null)
 				{
 					return;
 				}
-				_tabFolder.selectedChild = busyCanvas;
+				_tabFolder.selectedChild=busyCanvas;
 			}
 			else
 			{
-				_tabFolder.selectedChild = partReference.control.parent as Container;
+				_tabFolder.selectedChild=partReference.control.parent as Container;
 			}
 		}
-		
+
 		private function onTabChange(event:IndexChangedEvent):void
 		{
 			loadPart(event.relatedObject as BusyCanvas);
-		}		
-		
+		}
+
 	}
 }

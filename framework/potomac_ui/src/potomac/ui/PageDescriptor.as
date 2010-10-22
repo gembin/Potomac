@@ -4,14 +4,14 @@
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
  *  http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  *  Contributors:
  *     ElementRiver, LLC. - initial API and implementation
  *******************************************************************************/
 package potomac.ui
 {
 	import potomac.bundle.Extension;
-	
+
 
 	/**
 	 * A structure containing descriptive information about a Page.
@@ -23,19 +23,19 @@ package potomac.ui
 		private var _icon:Class;
 		private var _type:String;
 		private var _extension:Extension
-		
+
 		/**
 		 * Callers should not construct PageDescriptors.
 		 */
-		public function PageDescriptor(id:String,title:String,icon:Class,type:String,extension:Extension)
+		public function PageDescriptor(id:String, title:String, icon:Class, type:String, extension:Extension)
 		{
-			_id = id;
-			_title = title;
-			_icon = icon;
-			_type = type;
-			_extension = extension;
+			_id=id;
+			_title=title;
+			_icon=icon;
+			_type=type;
+			_extension=extension;
 		}
-		
+
 		/**
 		 * ID of the page.
 		 */
@@ -43,7 +43,7 @@ package potomac.ui
 		{
 			return _id;
 		}
-		
+
 		/**
 		 * The title of the page.
 		 */
@@ -51,7 +51,7 @@ package potomac.ui
 		{
 			return _title;
 		}
-		
+
 		/**
 		 * The icon of the page.
 		 */
@@ -59,7 +59,7 @@ package potomac.ui
 		{
 			return _icon;
 		}
-		
+
 		/**
 		 * The type of the page.
 		 */
@@ -67,7 +67,7 @@ package potomac.ui
 		{
 			return _type;
 		}
-		
+
 		/**
 		 * The extension that declared this page.
 		 */

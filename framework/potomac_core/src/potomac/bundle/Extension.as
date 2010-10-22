@@ -12,6 +12,9 @@ package potomac.bundle
 {
 	import flash.utils.getDefinitionByName;
 	
+	import mx.logging.ILogger;
+	import mx.logging.Log;
+	
 	/**
 	 * Extension describes an instance of a metadata extension declared within a 
 	 * class.  Extension is a dynamic class and contains dynamic properties that map
@@ -46,12 +49,13 @@ package potomac.bundle
 		private var _constructor:Constructor = null;
 		private var _variable:Variable = null;
 		
+		private static var logger:ILogger = Log.getLogger("potomac.bundle.Extension");
+		
 		/**
 		 * Callers should not construct instances of Extension.  Extensions can be retrieved via <code>BundleService</code>.
 		 */		
 		public function Extension(extension:XML,extensionPoint:ExtensionPoint,baseURL:String)
 		{
-
 			this._bundleID = extension.attribute("bundle").toString();
 			this._className = extension.attribute("class").toString();
 			this._pointID = extension.attribute("point").toString();
@@ -125,7 +129,9 @@ package potomac.bundle
 							this[name] = extensionAssets[assetVariable];
 						}
 						else
-						{
+						{ 
+							logger.warn("Unable to find extension asset '" + attribs[i].toString() + "' as specified in " + name + " of ["+_pointID+"] in "+_className+".");
+							trace("Unable to find extension asset '" + attribs[i].toString() + "' as specified in " + name + " of ["+_pointID+"] in "+_className+".");
 							this[name] = baseURL + "bundles/" + _bundleID + "/extensionAssets/" + attribs[i].toString(); 
 						}
 					}

@@ -4,7 +4,7 @@ package
 	import flash.events.EventDispatcher;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
-
+         
 	public class FakeService extends EventDispatcher
 	{
 		public static const SERVICE_COMPLETE:String = "fakeComplete";

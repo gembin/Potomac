@@ -4,7 +4,7 @@
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
  *  http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  *  Contributors:
  *     ElementRiver, LLC. - initial API and implementation
  *******************************************************************************/
@@ -13,7 +13,7 @@ package potomac.ui.defaultUI
 	import mx.containers.Accordion;
 	import mx.core.Container;
 	import mx.events.IndexChangedEvent;
-	
+
 	import potomac.core.potomac;
 	import potomac.inject.Injector;
 	import potomac.ui.FolderOptions;
@@ -30,33 +30,33 @@ package potomac.ui.defaultUI
 	public class AccordionFolder extends DefaultBaseFolder
 	{
 		/**
-		 * The folderType attribute for this folder. 
+		 * The folderType attribute for this folder.
 		 */
-		public static const ID:String = "accordion";
-		
+		public static const ID:String="accordion";
+
 		private var _accordion:Accordion;
-		
+
 		[Inject]
 		/**
 		 * Callers should not construct Folders.  Only Page classes should construct Folders via FolderFactory.
 		 */
-		public function AccordionFolder(injector:Injector,partExtensionMgr:PartExtensionManager,selectionSrv:SelectionService,potomacUI:PotomacUI)
+		public function AccordionFolder(injector:Injector, partExtensionMgr:PartExtensionManager, selectionSrv:SelectionService, potomacUI:PotomacUI)
 		{
-			super(injector,partExtensionMgr,selectionSrv,potomacUI);		
+			super(injector, partExtensionMgr, selectionSrv, potomacUI);
 		}
-		
-		
+
+
 		/**
 		 * @inheritDoc
 		 */
 		override public function create(options:FolderOptions=null):Container
 		{
-			_accordion = new Accordion;
-			_accordion.historyManagementEnabled = false;
-			_accordion.addEventListener(IndexChangedEvent.CHANGE,onItemChange);
+			_accordion=new Accordion;
+			_accordion.historyManagementEnabled=false;
+			_accordion.addEventListener(IndexChangedEvent.CHANGE, onItemChange);
 			return _accordion;
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
@@ -64,21 +64,21 @@ package potomac.ui.defaultUI
 		{
 			return _accordion;
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
 		override public function dispose():void
 		{
-			_accordion.removeEventListener(IndexChangedEvent.CHANGE,onItemChange);
+			_accordion.removeEventListener(IndexChangedEvent.CHANGE, onItemChange);
 		}
-		
+
 		private function onItemChange(event:IndexChangedEvent):void
 		{
 			loadPart(event.relatedObject as BusyCanvas);
 		}
 
-		
+
 		/**
 		 * @inheritDoc
 		 */
@@ -87,7 +87,7 @@ package potomac.ui.defaultUI
 			if (_accordion.selectedChild != null)
 				loadPart(_accordion.selectedChild as BusyCanvas);
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
@@ -95,7 +95,7 @@ package potomac.ui.defaultUI
 		{
 			return (_accordion.selectedChild == busyCanvas);
 		}
-		
+
 		/**
 		 * @inheritDoc
 		 */
@@ -104,24 +104,24 @@ package potomac.ui.defaultUI
 			if (partReference.control == null)
 			{
 				var busyCanvas:BusyCanvas;
-				var kids:Array = getContainer().getChildren();
-				for (var i:int = 0; i < kids.length; i++)
+				var kids:Array=getContainer().getChildren();
+				for (var i:int=0; i < kids.length; i++)
 				{
 					if (partReference.equals(kids[i].partReference))
 					{
-						busyCanvas = kids[i] as BusyCanvas;
+						busyCanvas=kids[i] as BusyCanvas;
 						break;
-					}					
+					}
 				}
 				if (busyCanvas == null)
 				{
 					return;
 				}
-				_accordion.selectedChild = busyCanvas;
+				_accordion.selectedChild=busyCanvas;
 			}
 			else
 			{
-				_accordion.selectedChild = partReference.control.parent as Container;
+				_accordion.selectedChild=partReference.control.parent as Container;
 			}
 		}
 	}

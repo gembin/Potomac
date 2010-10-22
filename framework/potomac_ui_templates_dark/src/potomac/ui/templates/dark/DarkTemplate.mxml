@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:Canvas xmlns:test="potomac.ui.restricted.*" xmlns="potomac.ui.templates.dark.*" xmlns:mx="http://www.adobe.com/2006/mxml" 
 	width="100%" height="100%" resize="onResize(event)" backgroundColor="0x000000">
-	
+	 
 	<mx:Metadata>
 		[Template(id="potomac_dark",properties="logo:image")]
 	</mx:Metadata>

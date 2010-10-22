@@ -183,7 +183,7 @@ package potomac.bundle
 		private var currentlyInstalling:Boolean = false;
 		
 		private var pendingPreloads:Array = new Array();
-		
+		 
 		private static var logger:ILogger = Log.getLogger("potomac.bundle.BundleService");
 		
 		/**
@@ -192,7 +192,7 @@ package potomac.bundle
 		 */		
 		public function BundleService()
 		{
-			baseURL = FlexGlobals.topLevelApplication.url;
+		  	baseURL = FlexGlobals.topLevelApplication.url;
 			var rslWeirdnessIndex:int = baseURL.indexOf("/[[DYNAMIC]]/");
 			if (rslWeirdnessIndex != -1)
 			{
@@ -598,7 +598,7 @@ package potomac.bundle
 			{
 				var newExts:Array = newlyAddedExtensions;
 				newlyAddedExtensions = new Array();
-				dispatchEvent(new ExtensionEvent(ExtensionEvent.EXTENSIONS_UPDATED,newlyAddedExtensions,new Array()));
+				dispatchEvent(new ExtensionEvent(ExtensionEvent.EXTENSIONS_UPDATED,newExts,new Array()));
 			}			
 		}
 		
