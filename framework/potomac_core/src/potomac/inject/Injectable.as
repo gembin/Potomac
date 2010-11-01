@@ -17,6 +17,10 @@ package potomac.inject
 	
 	internal class Injectable extends EventDispatcher
 	{
+		private const SINGLETON_NOT_CREATED:int = 0;
+		private const SINGLETON_CREATING:int = 1;
+		private const SINGLETON_CREATED:int = 2;		
+		
 		private var _boundTo:String;
 		private var _implementedBy:String;
 		private var _named:String;
@@ -32,7 +36,7 @@ package potomac.inject
 		private var _needsInjection:Boolean = true;
 		
 		private var _asyncCompleteQueue:Array = new Array();
-		private var _singletonInitialized:Boolean = false;
+		private var _singletonState:int = SINGLETON_NOT_CREATED;
 		
 		public function Injectable(bundle:String,boundTo:String,implementedBy:String=null,named:String=null,singleton:Boolean=false,providedBy:String=null,asyncInit:Boolean=false)
 		{
@@ -93,6 +97,7 @@ package potomac.inject
 		{
 			_singleton = true;
 			_singleInstance = val;
+			_singletonState = SINGLETON_CREATED;
 		}
 		
 		public function set asSingleton(val:Boolean):void
@@ -120,8 +125,12 @@ package potomac.inject
 		internal function requestAysncInstance(injector:Injector):void
 		{
 			var o:Object = null;
-
-			if (_singleton && _singleInstance != null)
+			
+			if (_singleton && _singletonState == SINGLETON_CREATING)
+			{
+				return;
+			}
+			else if (_singleton && _singletonState == SINGLETON_CREATED)
 			{
 				_needsInjection = false;
 				o = _singleton;
@@ -129,6 +138,9 @@ package potomac.inject
 			}
 			else
 			{
+				if (_singleton)
+					_singletonState = SINGLETON_CREATING;
+				
 				var createWorker:CreationWorker = null;
 				
 				if (_providedBy != null)
@@ -175,6 +187,10 @@ package potomac.inject
 		{
 			if (_singleton)  //save singleton object
 			{
+				if (_singleInstance !== null)
+				{
+					throw new Error("Un expected condition!  Singleton injectable instance already set.");
+				}
 				_singleInstance = o;
 			}
 			
@@ -203,8 +219,8 @@ package potomac.inject
 		
 		private function asyncDone(o:Object):void
 		{
-			_singletonInitialized = true;  //just always set this (doesn't matter if its not a singleton just wont be read)
-			
+			_singletonState = SINGLETON_CREATED;  //just always set this (doesn't matter if its not a singleton just wont be read)
+				
 			if (!_singleton)
 				_asyncCompleteQueue.push(o);
 			
@@ -229,7 +245,7 @@ package potomac.inject
 			}
 			else
 			{
-				if (_singletonInitialized)
+				if (_singletonState == SINGLETON_CREATED)
 					return _singleInstance;
 				
 				return null;
