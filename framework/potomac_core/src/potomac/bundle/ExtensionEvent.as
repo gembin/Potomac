@@ -71,6 +71,40 @@ package potomac.bundle
 			return _extensionsRemoved;
 		}
 		
+		/**
+		 * Returns an array of newly added extensions of the given extension point. 
+		 */
+		public function getAddedExtensions(extensionPointID:String):Array
+		{
+			var extensionsForPoint:Array = new Array();
+			for (var i:int = 0; i < _extensionsAdded.length; i++)
+			{
+				if (Extension(_extensionsAdded[i]).pointID == extensionPointID)
+				{
+					extensionsForPoint.push(_extensionsAdded[i]);
+				}
+			}
+			
+			return extensionsForPoint
+		}
+		
+		/**
+		 * Returns an array of newly removed extensions of the given extension point.
+		 */
+		public function getRemovedExtensions(extensionPointID:String):Array
+		{
+			var extensionsForPoint:Array = new Array();
+			for (var i:int = 0; i < _extensionsRemoved.length; i++)
+			{
+				if (Extension(_extensionsRemoved[i]).pointID == extensionPointID)
+				{
+					extensionsForPoint.push(_extensionsRemoved[i]);
+				}
+			}
+			
+			return extensionsForPoint
+		}
+		
 		
 		override public function clone():Event
 		{

@@ -22,6 +22,7 @@ package potomac.inject
 	import potomac.bundle.Argument;
 	import potomac.bundle.BundleEvent;
 	import potomac.bundle.Extension;
+	import potomac.bundle.ExtensionEvent;
 	import potomac.bundle.IBundleService;
 	import potomac.core.potomac;
 	
@@ -113,7 +114,6 @@ package potomac.inject
 		}
 		
 		private var _injectables:Array = new Array();
-		private var _manualInjectables:Array = new Array();
 		private var _bundleSrv:IBundleService;
 		private var _listeners:Array = new Array();
 		
@@ -128,18 +128,17 @@ package potomac.inject
 		public function Injector(bundleService:IBundleService)
 		{
 			_bundleSrv = bundleService;
-			bundleService.addEventListener(BundleEvent.BUNDLES_INSTALLED,onBundlesInstalled);
+			bundleService.addEventListener(ExtensionEvent.EXTENSIONS_UPDATED,onExtensionsUpdated);
 			
 			bind(IBundleService).toInstance(bundleService);
 			bind(Injector).toInstance(this);
 			
 			singletonInstance = this;
 		}
-		
-		private function onBundlesInstalled(e:BundleEvent):void
+
+		private function onExtensionsUpdated(event:ExtensionEvent):void
 		{
-			_injectables = new Array();
-			var extInjectables:Array = _bundleSrv.getExtensions("Injectable");			
+			var extInjectables:Array = event.getAddedExtensions("Injectable");			
 			for(var i:int = 0; i < extInjectables.length; i++)
 			{
 				var ext:Extension = extInjectables[i];
@@ -174,14 +173,8 @@ package potomac.inject
 				var injectable:Injectable = new Injectable(bundle,boundTo,implementedBy,named,singleton,providedBy,asyncInit);
 				_injectables.push(injectable);
 			}
-			
-			for(i = 0; i < _manualInjectables.length; i++)
-			{
-				_injectables.push(_manualInjectables[i]);
-			}
-			
-			_injectionPoints = new Object();			
-			var extInjects:Array = _bundleSrv.getExtensions("Inject");
+						
+			var extInjects:Array = event.getAddedExtensions("Inject");
 			for (i = 0; i < extInjects.length; i++)
 			{
 				ext = extInjects[i];
@@ -200,8 +193,7 @@ package potomac.inject
 			}	
 			
 			//populate listeners
-			_listeners = new Array();
-			var lisExts:Array = _bundleSrv.getExtensions("InjectionListener");
+			var lisExts:Array = event.getAddedExtensions("InjectionListener");
 			for(i = 0; i < lisExts.length; i++)
 			{
 				var clz:Class = getDefinitionByName(lisExts[i].className) as Class;
@@ -229,7 +221,6 @@ package potomac.inject
 				
 			var injectable:Injectable = new Injectable(null,normalizeClassName(getQualifiedClassName(clazz)));
 			_injectables.push(injectable);
-			_manualInjectables.push(injectable);
 			return new Binder(injectable);			
 		}
 
